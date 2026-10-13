@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WDAC Beginner Guide</title>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--ink:#1c2430;--mute:#5b6675;--line:#dde3ec;--accent:#0b6bcb;--accent2:#0a8f5b;--warn:#b45309;--warnbg:#fff4e0;--tipbg:#e8f6ee;--infobg:#e8f1fc;--code:#0f1b2d;--codeink:#d6e4f7}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1520;--card:#17202e;--ink:#e6ecf5;--mute:#9aa7ba;--line:#2a3547;--accent:#5aa6ff;--accent2:#4cd39b;--warn:#f5b45a;--warnbg:#3a2c14;--tipbg:#12301f;--infobg:#142a47;--code:#0a1019;--codeink:#d6e4f7}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,Segoe UI,Roboto,sans-serif}
+.wrap{display:flex;max-width:1200px;margin:0 auto}
+nav{position:sticky;top:0;align-self:flex-start;width:260px;height:100vh;overflow:auto;padding:24px 16px;border-right:1px solid var(--line)}
+nav h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 10px}
+nav a{display:block;padding:6px 10px;border-radius:6px;color:var(--ink);text-decoration:none;font-size:14px}
+nav a:hover{background:var(--infobg);color:var(--accent)}
+main{flex:1;min-width:0;padding:32px 28px 80px}
+header.hero{background:linear-gradient(135deg,#0b3d78,#0b6bcb);color:#fff;border-radius:14px;padding:32px;margin-bottom:28px}
+.hero h1{margin:0 0 8px;font-size:32px}.hero p{margin:0;opacity:.92}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:22px}
+h2{margin-top:0;font-size:24px;border-bottom:2px solid var(--accent);padding-bottom:8px}
+h3{margin:22px 0 8px;font-size:18px;color:var(--accent)}
+code{background:var(--infobg);padding:1px 6px;border-radius:4px;font:13.5px Consolas,monospace}
+.cb{position:relative;margin:12px 0}
+pre{background:var(--code);color:var(--codeink);padding:14px 16px;border-radius:8px;overflow:auto;font:13.5px/1.55 Consolas,Menlo,monospace;margin:0}
+pre .c{color:#7f93ad}
+.cp{position:absolute;top:6px;right:6px;background:#27374f;color:#d6e4f7;border:0;border-radius:5px;padding:3px 9px;font-size:12px;cursor:pointer}
+.cp:hover{background:var(--accent)}
+.note,.tip,.warn{padding:12px 16px;border-radius:8px;margin:14px 0;border-left:4px solid}
+.note{background:var(--infobg);border-color:var(--accent)}.tip{background:var(--tipbg);border-color:var(--accent2)}.warn{background:var(--warnbg);border-color:var(--warn)}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--infobg)}
+.tblwrap{overflow-x:auto}
+.flow{display:flex;flex-direction:column;gap:8px;margin:16px 0}
+.box{border:2px solid var(--accent);border-radius:10px;padding:10px 14px;background:var(--infobg)}
+.box b{display:block}
+.box.k{border-color:var(--accent2);background:var(--tipbg)}
+.box.w{border-color:var(--warn);background:var(--warnbg)}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
+.arrow{text-align:center;color:var(--mute);font-size:18px;line-height:1}
+.steps{counter-reset:s;list-style:none;padding:0}
+.steps>li{counter-increment:s;position:relative;padding:0 0 18px 48px}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700}
+.ex{border:1px solid var(--line);border-radius:10px;padding:4px 18px 10px;margin:16px 0}
+.ex h3{margin-top:12px}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:var(--accent);color:#fff;margin-left:6px;vertical-align:middle}
+.tag.d{background:#c2410c}.tag.a{background:var(--accent2)}
+@media (max-width:860px){nav{display:none}main{padding:16px}header.hero{padding:22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+<h2>Contents</h2>
+<a href="#what">1. What is WDAC?</a>
+<a href="#arch">2. Architecture</a>
+<a href="#components">3. Components &amp; types</a>
+<a href="#install">4. Setup on Server 2025 Core</a>
+<a href="#first">5. Your first policy</a>
+<a href="#vs">6. AppLocker vs WDAC</a>
+<a href="#examples">7. Ten examples</a>
+<a href="#trouble">8. Troubleshooting &amp; cheat sheet</a>
+</nav>
+<main>
+
+<header class="hero">
+<h1>WDAC for Beginners</h1>
+<p>Windows Defender Application Control (now branded <b>App Control for Business</b>) explained step by step, with hands-on PowerShell examples for Windows Server 2025 Core.</p>
+</header>
+
+<!-- 1 -->
+<section id="what">
+<h2>1. What is WDAC?</h2>
+<p><b>WDAC</b> is a Windows security feature that decides <b>which code is allowed to run</b> on a machine. Anything not explicitly trusted by your policy is blocked: executables, DLLs, drivers, scripts and installers.</p>
+<div class="note"><b>Name check:</b> Microsoft renamed WDAC to <b>App Control for Business</b>. The cmdlets, file formats and many docs still say WDAC, <code>CI</code> (Code Integrity) or <code>ConfigCI</code>. They are all the same technology.</div>
+
+<h3>Why use it?</h3>
+<ul>
+<li><b>Stops malware and ransomware</b> that runs from Downloads, Temp or an attacker's dropped files, because unknown code is simply not allowed.</li>
+<li><b>Allow-list model:</b> "deny by default, allow what I trust" is far stronger than "detect bad stuff".</li>
+<li><b>Kernel-level enforcement:</b> it applies to drivers and to admin users too, so an admin cannot casually bypass it.</li>
+<li><b>Compliance:</b> a common requirement in hardened server baselines.</li>
+</ul>
+
+<h3>Mental model</h3>
+<p>Think of a nightclub guest list. Antivirus is a bouncer who knows a list of troublemakers. WDAC is a bouncer who only lets in people on the guest list, whoever they are.</p>
+
+<h3>Where it works</h3>
+<p>Windows 10/11 and Windows Server 2016 and later, including Server Core. Windows Server 2025 supports the modern <b>multiple-policy format</b> (base + supplemental policies).</p>
+</section>
+
+<!-- 2 -->
+<section id="arch">
+<h2>2. Architecture of WDAC</h2>
+<p>WDAC is enforced by <b>Code Integrity (CI)</b>, a component of the Windows kernel. Every time something tries to load, CI checks it against the active policies.</p>
+
+<div class="flow">
+<div class="box w"><b>Policy authoring (XML)</b>Written with PowerShell (ConfigCI module), the App Control Wizard, or templates in <code>C:\Windows\schemas\CodeIntegrity\ExamplePolicies</code></div>
+<div class="arrow">&#9660; ConvertFrom-CIPolicy</div>
+<div class="box"><b>Binary policy (.cip)</b>Compiled file named <code>{PolicyGUID}.cip</code></div>
+<div class="arrow">&#9660; deploy (CiTool, Group Policy, Intune, MDM, file copy)</div>
+<div class="box"><b>Active policy store</b><code>C:\Windows\System32\CodeIntegrity\CiPolicies\Active\</code> (also stored in the EFI partition so it applies at early boot)</div>
+<div class="arrow">&#9660; loaded by</div>
+<div class="row">
+<div class="box k"><b>KMCI</b>Kernel Mode Code Integrity. Checks drivers and kernel code.</div>
+<div class="box k"><b>UMCI</b>User Mode Code Integrity. Checks EXE, DLL, scripts, MSI, packaged apps.</div>
+</div>
+<div class="arrow">&#9660; decision</div>
+<div class="row">
+<div class="box"><b>Allow</b>Code runs.</div>
+<div class="box w"><b>Audit mode</b>Code runs, event is logged.</div>
+<div class="box w"><b>Enforce mode</b>Code is blocked, event is logged.</div>
+</div>
+<div class="arrow">&#9660;</div>
+<div class="box"><b>Event log</b>Applications and Services Logs &rarr; Microsoft &rarr; Windows &rarr; CodeIntegrity &rarr; Operational</div>
+</div>
+
+<h3>How a file is evaluated (simplified)</h3>
+<ol>
+<li>A process tries to start, or a DLL/driver tries to load.</li>
+<li>Code Integrity looks at the file's <b>digital signature</b>, <b>hash</b>, <b>file attributes</b> or <b>path</b>.</li>
+<li>It compares them with the rules in every active policy. An explicit <b>Deny</b> always wins over Allow.</li>
+<li>No matching Allow rule means the file is blocked (enforce) or logged (audit).</li>
+</ol>
+
+<h3>Extra trust sources (optional)</h3>
+<ul>
+<li><b>Managed Installer:</b> trust anything installed by a designated tool such as Configuration Manager.</li>
+<li><b>Intelligent Security Graph (ISG):</b> trust files Microsoft's cloud reputation considers safe.</li>
+</ul>
+<div class="note">When a policy enforces user mode, PowerShell automatically switches to <b>Constrained Language Mode</b> for scripts that are not trusted by the policy. This is an expected side effect and part of the protection.</div>
+</section>
+
+<!-- 3 -->
+<section id="components">
+<h2>3. Policy components and types</h2>
+
+<h3>3.1 Policy types</h3>
+<div class="tblwrap"><table>
+<tr><th>Type</th><th>What it is</th><th>Typical use</th></tr>
+<tr><td><b>Base policy</b></td><td>Stand-alone policy with its own GUID. Defines the core trust.</td><td>Your main allow-list for a server role.</td></tr>
+<tr><td><b>Supplemental policy</b></td><td>Extends one base policy by adding more allow rules. It cannot remove or change base rules. The base needs rule option 17.</td><td>Per-team or per-app additions without editing the base.</td></tr>
+<tr><td><b>Multiple base policies</b></td><td>Several base policies active at once. A file must be allowed by <i>all</i> of them (intersection).</td><td>Layering a baseline plus a deny-list.</td></tr>
+<tr><td><b>Audit mode policy</b></td><td>Rule option 3 set. Nothing is blocked, only logged.</td><td>Testing before enforcement.</td></tr>
+<tr><td><b>Enforced policy</b></td><td>Rule option 3 removed. Unauthorized code is blocked.</td><td>Production.</td></tr>
+<tr><td><b>Signed policy</b></td><td>Policy signed with your certificate. Cannot be removed or changed without a matching signature.</td><td>High-security, tamper-resistant environments. Advanced topic.</td></tr>
+</table></div>
+
+<h3>3.2 Policy XML building blocks</h3>
+<div class="tblwrap"><table>
+<tr><th>Element</th><th>Purpose</th></tr>
+<tr><td><code>PolicyID</code> / <code>BasePolicyID</code></td><td>GUIDs that identify the policy and (for supplementals) the base it extends.</td></tr>
+<tr><td><code>Rules</code></td><td>The policy <b>rule options</b> (behaviour switches, see 3.3).</td></tr>
+<tr><td><code>Signers</code></td><td>Certificate-based trust (publisher, issuing CA, root).</td></tr>
+<tr><td><code>FileRules</code></td><td>Hash, file name/attributes and path rules (Allow or Deny).</td></tr>
+<tr><td><code>SigningScenarios</code></td><td>Value 131 = kernel mode, value 12 = user mode. Allow/deny entries are grouped here.</td></tr>
+<tr><td><code>UpdatePolicySigners</code>, <code>SupplementalPolicySigners</code></td><td>Who may update the policy or add supplementals (signed policies).</td></tr>
+</table></div>
+
+<h3>3.3 Common rule options</h3>
+<div class="tblwrap"><table>
+<tr><th>#</th><th>Option</th><th>Meaning</th></tr>
+<tr><td>0</td><td>Enabled:UMCI</td><td>Also enforce user mode code (not only kernel drivers).</td></tr>
+<tr><td>3</td><td>Enabled:Audit Mode</td><td>Log instead of block.</td></tr>
+<tr><td>9</td><td>Enabled:Advanced Boot Options Menu</td><td>Lets you reach F8 menu.</td></tr>
+<tr><td>10</td><td>Enabled:Boot Audit on Failure</td><td>If a boot driver fails, fall back to audit.</td></tr>
+<tr><td>11</td><td>Disabled:Script Enforcement</td><td>Do not apply script rules.</td></tr>
+<tr><td>13</td><td>Enabled:Managed Installer</td><td>Trust the managed installer.</td></tr>
+<tr><td>14</td><td>Enabled:Intelligent Security Graph</td><td>Trust reputation-approved files.</td></tr>
+<tr><td>16</td><td>Enabled:Update Policy No Reboot</td><td>Apply policy updates without reboot.</td></tr>
+<tr><td>17</td><td>Enabled:Allow Supplemental Policies</td><td>Required on a base to accept supplementals.</td></tr>
+<tr><td>18</td><td>Disabled:Runtime FilePath Rule Protection</td><td>Allows path rules on user-writable folders (not recommended).</td></tr>
+<tr><td>19</td><td>Enabled:Dynamic Code Security</td><td>Also checks .NET dynamic code.</td></tr>
+</table></div>
+
+<h3>3.4 File rule levels (how a file is identified)</h3>
+<p>From most flexible to most specific:</p>
+<div class="tblwrap"><table>
+<tr><th>Level</th><th>Trusts</th><th>Comment</th></tr>
+<tr><td>RootCertificate</td><td>Anything chained to a root CA</td><td>Very broad, rarely recommended.</td></tr>
+<tr><td>PcaCertificate</td><td>Anything from an issuing CA</td><td>Broad, commonly the best "everything from vendor X" level for Microsoft.</td></tr>
+<tr><td>Publisher</td><td>PCA + the publisher (leaf subject name)</td><td>"Everything signed by Contoso Ltd".</td></tr>
+<tr><td>FilePublisher</td><td>Publisher + file name + minimum version</td><td>Good balance. Recommended default.</td></tr>
+<tr><td>SignedVersion</td><td>Publisher + minimum version</td><td>Any file from the publisher at or above a version.</td></tr>
+<tr><td>FileName</td><td>Original file name, file description or product name</td><td>Used mostly for deny rules.</td></tr>
+<tr><td>Hash</td><td>One exact file</td><td>Most precise, but changes with every update. Use for unsigned code.</td></tr>
+<tr><td>FilePath</td><td>A folder or file location</td><td>Easy, but only safe when only admins can write there.</td></tr>
+</table></div>
+<div class="tip"><b>Rule of thumb:</b> prefer <code>FilePublisher</code> with <code>-Fallback Hash</code>. The fallback covers unsigned files automatically.</div>
+</section>
+
+<!-- 4 -->
+<section id="install">
+<h2>4. Install / configure on Windows Server 2025 Core</h2>
+<p>WDAC is <b>built into Windows</b>. There is no role or feature to install. What you need on Server Core is access to PowerShell, the <code>ConfigCI</code> module and a way to move files around.</p>
+
+<ol class="steps">
+<li><b>Get a shell.</b> After logging in to Server Core you land in <code>cmd</code>. Start PowerShell:
+<div class="cb"><pre>powershell</pre></div>
+Or work remotely from your admin PC (recommended, since you can copy/paste):
+<div class="cb"><pre>Enable-PSRemoting -Force                    <span class="c"># on the server</span>
+Enter-PSSession -ComputerName CORE01 -Credential (Get-Credential)   <span class="c"># from your admin PC</span></pre></div></li>
+
+<li><b>Check the OS and the module.</b>
+<div class="cb"><pre>Get-ComputerInfo | Select-Object OsName, OsVersion, WindowsEditionId
+Get-Command -Module ConfigCI | Select-Object Name
+Test-Path C:\Windows\System32\CiTool.exe</pre></div>
+You should see <code>New-CIPolicy</code>, <code>ConvertFrom-CIPolicy</code>, <code>Set-RuleOption</code>, <code>Merge-CIPolicy</code> and others.</li>
+
+<li><b>Check the built-in templates.</b>
+<div class="cb"><pre>Get-ChildItem C:\Windows\schemas\CodeIntegrity\ExamplePolicies</pre></div>
+Useful ones: <code>AllowMicrosoft.xml</code>, <code>DefaultWindows_Audit.xml</code>, <code>DefaultWindows_Enforced.xml</code>, <code>AllowAll.xml</code>, <code>DenyAllAudit.xml</code>.</li>
+
+<li><b>Create working folders.</b>
+<div class="cb"><pre>New-Item -ItemType Directory -Force C:\WDAC\Policies, C:\WDAC\Binary | Out-Null</pre></div></li>
+
+<li><b>Know your deployment methods.</b>
+<div class="tblwrap"><table>
+<tr><th>Method</th><th>When</th></tr>
+<tr><td><code>CiTool.exe --update-policy file.cip</code></td><td>Local, lab, and Server 2025. Applies without reboot.</td></tr>
+<tr><td>Copy file to <code>...\CiPolicies\Active\</code> and reboot</td><td>Fallback if CiTool is not available.</td></tr>
+<tr><td>Group Policy (Deploy Windows Defender Application Control)</td><td>Domain environments. Points to a policy file path.</td></tr>
+<tr><td>Intune / MDM / Configuration Manager</td><td>Managed fleets.</td></tr>
+</table></div></li>
+
+<li><b>Safety net before you start.</b> Take a VM checkpoint/snapshot. A badly built enforced policy can stop the server booting normally.</li>
+</ol>
+<div class="warn"><b>Always begin in audit mode.</b> Never enforce a policy you have not tested on a lab VM first.</div>
+<div class="tip">Server Core has Notepad, so <code>notepad file.xml</code> still opens a window for quick edits. The graphical <b>App Control Wizard</b> cannot run on Core; use it on your admin PC and copy the resulting XML over.</div>
+</section>
+
+<!-- 5 -->
+<section id="first">
+<h2>5. Step-by-step: create and configure your first policy</h2>
+<p>Goal: a policy that allows Windows, Microsoft-signed code and your own approved software, starts in audit mode, and is then moved to enforce mode.</p>
+
+<ol class="steps">
+<li><b>Start from a template.</b>
+<div class="cb"><pre>Copy-Item C:\Windows\schemas\CodeIntegrity\ExamplePolicies\DefaultWindows_Audit.xml C:\WDAC\Policies\MyBase.xml</pre></div>
+<code>DefaultWindows</code> allows Windows components and the Store apps. For a server you may prefer <code>AllowMicrosoft.xml</code> which also trusts all Microsoft-signed software.</li>
+
+<li><b>Name the policy and give it an ID.</b>
+<div class="cb"><pre>Set-CIPolicyIdInfo -FilePath C:\WDAC\Policies\MyBase.xml -PolicyName "Lab Base Policy" -ResetPolicyID</pre></div>
+<code>-ResetPolicyID</code> generates a new GUID, so you do not clash with another policy.</li>
+
+<li><b>Set the rule options.</b> Allow supplementals and make sure it is in audit mode:
+<div class="cb"><pre>$p = "C:\WDAC\Policies\MyBase.xml"
+Set-RuleOption -FilePath $p -Option 3                 <span class="c"># Audit mode ON</span>
+Set-RuleOption -FilePath $p -Option 17                <span class="c"># Allow supplemental policies</span>
+Set-RuleOption -FilePath $p -Option 16                <span class="c"># Update without reboot</span>
+Set-RuleOption -FilePath $p -Option 0                 <span class="c"># Enforce user mode too</span></pre></div></li>
+
+<li><b>Compile to binary.</b> For the multiple-policy format the file must be named after the PolicyID:
+<div class="cb"><pre>$id = ([xml](Get-Content $p)).SiPolicy.PolicyID
+ConvertFrom-CIPolicy -XmlFilePath $p -BinaryFilePath "C:\WDAC\Binary\$id.cip"
+$id</pre></div></li>
+
+<li><b>Deploy it.</b>
+<div class="cb"><pre>CiTool.exe --update-policy "C:\WDAC\Binary\$id.cip"
+CiTool.exe --list-policies</pre></div>
+You should see your policy listed. In older builds without CiTool, copy the file to <code>C:\Windows\System32\CodeIntegrity\CiPolicies\Active\</code> and reboot.</li>
+
+<li><b>Run your workloads (audit period).</b> Use the server normally for several days: start services, run backups, patch, install roles, run scheduled tasks. Then read the log:
+<div class="cb"><pre>Get-WinEvent -LogName "Microsoft-Windows-CodeIntegrity/Operational" |
+  Where-Object Id -in 3076,3077 |
+  Select-Object TimeCreated, Id, Message -First 10 | Format-List</pre></div>
+<b>3076</b> = would have been blocked (audit). <b>3077</b> = was blocked (enforced).</li>
+
+<li><b>Generate rules from the audit events.</b> This turns what was "blocked" into allow rules you can review:
+<div class="cb"><pre>New-CIPolicy -FilePath C:\WDAC\Policies\FromAudit.xml -Audit -Level FilePublisher -Fallback Hash -UserPEs -MultiplePolicyFormat</pre></div>
+Open <code>FromAudit.xml</code> and <b>remove anything you do not trust</b>. Do not blindly approve everything that appeared in the log.</li>
+
+<li><b>Merge the approved rules into the base.</b>
+<div class="cb"><pre>Merge-CIPolicy -PolicyPaths $p, C:\WDAC\Policies\FromAudit.xml -OutputFilePath $p</pre></div></li>
+
+<li><b>Switch to enforce mode</b> (delete option 3), recompile and redeploy:
+<div class="cb"><pre>Set-RuleOption -FilePath $p -Option 3 -Delete
+ConvertFrom-CIPolicy -XmlFilePath $p -BinaryFilePath "C:\WDAC\Binary\$id.cip"
+CiTool.exe --update-policy "C:\WDAC\Binary\$id.cip"</pre></div></li>
+
+<li><b>Test enforcement.</b> Copy an unsigned or unapproved program (for example a downloaded tool) to <code>C:\Temp</code> and try to run it. It should fail with <i>"This program is blocked by group policy"</i>, and event 3077 appears.</li>
+</ol>
+
+<div class="tip"><b>Rollback:</b> <code>CiTool.exe --remove-policy {GUID}</code> then reboot if needed. Keep your console/VM access open until you have verified the server still works.</div>
+</section>
+
+<!-- 6 -->
+<section id="vs">
+<h2>6. AppLocker vs WDAC</h2>
+<p>Both are application control technologies. They can be used together, but WDAC is Microsoft's strategic choice for strong security.</p>
+<div class="tblwrap"><table>
+<tr><th>Topic</th><th>AppLocker</th><th>WDAC (App Control)</th></tr>
+<tr><td>Security boundary</td><td>Not a defined security boundary (user-mode feature; can be bypassed by admins or exploits)</td><td>Serviced as a security feature; enforced in the kernel</td></tr>
+<tr><td>Scope</td><td>User mode only (EXE, DLL, scripts, MSI, packaged apps)</td><td>Kernel mode (drivers) and user mode</td></tr>
+<tr><td>Applies to</td><td>Per user or group (SID based)</td><td>Whole device, all users</td></tr>
+<tr><td>Rule model</td><td>Allow rules with exceptions; deny possible</td><td>Allow and Deny, signers, hash, path, attributes</td></tr>
+<tr><td>Rule creation</td><td>GUI (Local Security Policy), PowerShell</td><td>PowerShell, App Control Wizard, XML</td></tr>
+<tr><td>Audit mode</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Multiple policies</td><td>One effective policy set</td><td>Multiple base + supplemental policies</td></tr>
+<tr><td>Managed installer / ISG</td><td>No</td><td>Yes</td></tr>
+<tr><td>Script control</td><td>Rules for scripts</td><td>Enforced via PowerShell Constrained Language Mode and script hosts</td></tr>
+<tr><td>Windows editions</td><td>Enterprise/Education (rule enforcement), Server</td><td>All editions can enforce; authoring tools in all</td></tr>
+<tr><td>Event log</td><td>Microsoft-Windows-AppLocker/*  (8003, 8004...)</td><td>Microsoft-Windows-CodeIntegrity/Operational (3076, 3077...)</td></tr>
+<tr><td>Best for</td><td>Per-user restrictions on a shared machine; legacy setups</td><td>Servers, kiosks, high-security endpoints</td></tr>
+</table></div>
+<div class="tip"><b>Practical guidance:</b> use WDAC as your device-wide baseline. Keep AppLocker only if you need per-user rules on top (for example, different rules for admins and standard users on a terminal server). If both exist, a file must satisfy both.</div>
+</section>
+
+<!-- 7 -->
+<section id="examples">
+<h2>7. Ten simple examples</h2>
+<p>All examples assume the working folders from section 4 and use PowerShell on Server Core. Replace the sample paths with your own. Each example follows the same pattern: <b>define &rarr; build &rarr; deploy &rarr; test</b>.</p>
+
+<div class="note"><b>Reusable helper:</b> paste this once per session. It compiles an XML policy and deploys it.
+<div class="cb"><pre>function Deploy-Wdac($Xml){
+  $id = ([xml](Get-Content $Xml)).SiPolicy.PolicyID
+  $cip = "C:\WDAC\Binary\$id.cip"
+  ConvertFrom-CIPolicy -XmlFilePath $Xml -BinaryFilePath $cip
+  CiTool.exe --update-policy $cip
+}</pre></div></div>
+
+<div class="ex">
+<h3>Example 1: Audit-only policy (see what would be blocked) <span class="tag a">Audit</span></h3>
+<p><b>Define:</b> learn what runs on the server without breaking anything.</p>
+<div class="cb"><pre>$x = "C:\WDAC\Policies\Ex1.xml"
+Copy-Item C:\Windows\schemas\CodeIntegrity\ExamplePolicies\DefaultWindows_Audit.xml $x
+Set-CIPolicyIdInfo $x -PolicyName "Ex1 Audit" -ResetPolicyID
+Deploy-Wdac $x</pre></div>
+<p><b>Test:</b> run any unsigned tool. It starts normally. Then run:</p>
+<div class="cb"><pre>Get-WinEvent -LogName Microsoft-Windows-CodeIntegrity/Operational -MaxEvents 5 | Where Id -eq 3076 | Format-List TimeCreated,Message</pre></div>
+</div>
+
+<div class="ex">
+<h3>Example 2: Allow only Windows and Microsoft-signed software <span class="tag">Enforce</span></h3>
+<p><b>Define:</b> the classic "Microsoft only" server. Everything else is blocked.</p>
+<div class="cb"><pre>$x = "C:\WDAC\Policies\Ex2.xml"
+Copy-Item C:\Windows\schemas\CodeIntegrity\ExamplePolicies\AllowMicrosoft.xml $x
+Set-CIPolicyIdInfo $x -PolicyName "Ex2 Microsoft Only" -ResetPolicyID
+Set-RuleOption $x -Option 3 -Delete       <span class="c"># make sure audit is OFF</span>
+Deploy-Wdac $x</pre></div>
+<p><b>Test:</b> copy any third-party unsigned <code>.exe</code> to <code>C:\Temp</code> and run it: blocked. <code>notepad.exe</code>, <code>whoami.exe</code> still run.</p>
+<div class="warn">Run this on a VM with a checkpoint first.</div>
+</div>
+
+<div class="ex">
+<h3>Example 3: Allow one vendor by publisher <span class="tag">Allow</span></h3>
+<p><b>Define:</b> trust everything signed by a vendor (say, an app installed in <code>C:\Program Files\Contoso</code>).</p>
+<div class="cb"><pre>$base = "C:\WDAC\Policies\Ex2.xml"
+$drivers = Get-SystemDriver -ScanPath "C:\Program Files\Contoso" -UserPEs
+$rule = New-CIPolicyRule -DriverFiles $drivers -Level Publisher
+Merge-CIPolicy -PolicyPaths $base -OutputFilePath C:\WDAC\Policies\Ex3.xml -Rules $rule
+Set-CIPolicyIdInfo C:\WDAC\Policies\Ex3.xml -PolicyName "Ex3 Contoso Publisher" -ResetPolicyID
+Deploy-Wdac C:\WDAC\Policies\Ex3.xml</pre></div>
+<p><b>Test:</b> the Contoso app starts. An unsigned tool is still blocked. Note: the app must be <b>signed</b>; unsigned files fall back to nothing at the Publisher level (see Example 6).</p>
+</div>
+
+<div class="ex">
+<h3>Example 4: Block a specific tool by file name (Deny rule) <span class="tag d">Deny</span></h3>
+<p><b>Define:</b> block <code>mshta.exe</code> (a commonly abused scripting host), even though Microsoft signs it.</p>
+<div class="cb"><pre>$deny = New-CIPolicyRule -DriverFilePath C:\Windows\System32\mshta.exe -Level FileName -SpecificFileNameLevel OriginalFileName -Deny
+Merge-CIPolicy -PolicyPaths C:\WDAC\Policies\Ex2.xml -OutputFilePath C:\WDAC\Policies\Ex4.xml -Rules $deny
+Set-CIPolicyIdInfo C:\WDAC\Policies\Ex4.xml -PolicyName "Ex4 Block mshta" -ResetPolicyID
+Deploy-Wdac C:\WDAC\Policies\Ex4.xml</pre></div>
+<p><b>Test:</b> <code>mshta.exe about:blank</code> now fails; renaming the file does not help because the <i>original</i> file name is used.</p>
+<div class="tip">Microsoft publishes a recommended block-rules list for known bypass binaries. Review it when you harden a real server.</div>
+</div>
+
+<div class="ex">
+<h3>Example 5: Block one exact file by hash <span class="tag d">Deny</span></h3>
+<p><b>Define:</b> forbid one known-bad or unwanted file regardless of name or location.</p>
+<div class="cb"><pre>$deny = New-CIPolicyRule -DriverFilePath C:\Temp\unwanted.exe -Level Hash -Deny
+Merge-CIPolicy -PolicyPaths C:\WDAC\Policies\Ex2.xml -OutputFilePath C:\WDAC\Policies\Ex5.xml -Rules $deny
+Set-CIPolicyIdInfo C:\WDAC\Policies\Ex5.xml -PolicyName "Ex5 Hash Deny" -ResetPolicyID
+Deploy-Wdac C:\WDAC\Policies\Ex5.xml</pre></div>
+<p><b>Test:</b> rename and move <code>unwanted.exe</code>; it is still blocked because the hash is identical. Change a single byte and it will run (hashes are exact), which is why hash rules suit single known files only.</p>
+</div>
+
+<div class="ex">
+<h3>Example 6: Allow an unsigned in-house app by hash <span class="tag">Allow</span></h3>
+<p><b>Define:</b> your own script host or tool has no digital signature.</p>
+<div class="cb"><pre>$allow = New-CIPolicyRule -DriverFilePath C:\Apps\inventory.exe -Level Hash
+Merge-CIPolicy -PolicyPaths C:\WDAC\Policies\Ex2.xml -OutputFilePath C:\WDAC\Policies\Ex6.xml -Rules $allow
+Set-CIPolicyIdInfo C:\WDAC\Policies\Ex6.xml -PolicyName "Ex6 InHouse Hash" -ResetPolicyID
+Deploy-Wdac C:\WDAC\Policies\Ex6.xml</pre></div>
+<p><b>Test:</b> <code>inventory.exe</code> runs. After you rebuild the app the hash changes and it is blocked until you update the policy. Signing the app with your own code-signing certificate avoids this.</p>
+</div>
+
+<div class="ex">
+<h3>Example 7: Allow an admin-only folder by path <span class="tag">Allow</span></h3>
+<p><b>Define:</b> trust everything in <code>C:\ApprovedTools</code>.</p>
+<div class="cb"><pre>New-Item -ItemType Directory C:\ApprovedTools -Force | Out-Null
+$rule = New-CIPolicyRule -FilePathRule "C:\ApprovedTools\*"
+Merge-CIPolicy -PolicyPaths C:\WDAC\Policies\Ex2.xml -OutputFilePath C:\WDAC\Policies\Ex7.xml -Rules $rule
+Set-CIPolicyIdInfo C:\WDAC\Policies\Ex7.xml -PolicyName "Ex7 Path Rule" -ResetPolicyID
+Deploy-Wdac C:\WDAC\Policies\Ex7.xml</pre></div>
+<p><b>Test:</b> copy a tool into the folder: it runs. The same tool in <code>C:\Temp</code>: blocked.</p>
+<div class="warn">Path rules are only as safe as the folder permissions. WDAC refuses path rules for folders that standard users can write to (unless option 18 is set). Keep <code>C:\ApprovedTools</code> writable by administrators only.</div>
+</div>
+
+<div class="ex">
+<h3>Example 8: Extend a base policy with a supplemental policy <span class="tag a">Supplemental</span></h3>
+<p><b>Define:</b> the app team adds its own allow rules without touching the security baseline.</p>
+<div class="cb"><pre>$base = "C:\WDAC\Policies\Ex2.xml"        <span class="c"># must include option 17 (Allow supplemental)</span>
+Set-RuleOption $base -Option 17
+Deploy-Wdac $base
+
+$sup = "C:\WDAC\Policies\Ex8-Sup.xml"
+$d = Get-SystemDriver -ScanPath "C:\Program Files\Fabrikam" -UserPEs
+New-CIPolicy -FilePath $sup -DriverFiles $d -Level FilePublisher -Fallback Hash -MultiplePolicyFormat
+Set-CIPolicyIdInfo $sup -BasePolicyToSupplementPath $base -PolicyName "Ex8 Fabrikam Supplemental" -ResetPolicyID
+Deploy-Wdac $sup</pre></div>
+<p><b>Test:</b> <code>CiTool.exe --list-policies</code> shows a base and a supplemental. The Fabrikam app runs.</p>
+</div>
+
+<div class="ex">
+<h3>Example 9: Learn from audit, then switch to enforce <span class="tag">Workflow</span></h3>
+<p><b>Define:</b> the real-world recipe: audit &rarr; review &rarr; merge &rarr; enforce.</p>
+<div class="cb"><pre>$base = "C:\WDAC\Policies\MyBase.xml"      <span class="c"># built in section 5, currently audit</span>
+<span class="c"># 1. After a few days of audit, build rules from the 3076 events</span>
+New-CIPolicy -FilePath C:\WDAC\Policies\Learned.xml -Audit -Level FilePublisher -Fallback Hash -UserPEs -MultiplePolicyFormat
+<span class="c"># 2. REVIEW Learned.xml by hand, delete anything suspicious</span>
+Merge-CIPolicy -PolicyPaths $base, C:\WDAC\Policies\Learned.xml -OutputFilePath $base
+<span class="c"># 3. Enforce</span>
+Set-RuleOption $base -Option 3 -Delete
+Deploy-Wdac $base</pre></div>
+<p><b>Test:</b> a program that never ran during the audit window is now blocked and logs event 3077.</p>
+</div>
+
+<div class="ex">
+<h3>Example 10: Inspect, troubleshoot and remove a policy <span class="tag a">Operate</span></h3>
+<p><b>Define:</b> every admin needs to see what is deployed and undo it quickly.</p>
+<div class="cb"><pre><span class="c"># What is active?</span>
+CiTool.exe --list-policies
+
+<span class="c"># Why was something blocked? (3077 = blocked, 3076 = would be blocked)</span>
+Get-WinEvent -LogName Microsoft-Windows-CodeIntegrity/Operational |
+  Where-Object Id -in 3076,3077 |
+  Select-Object -First 5 TimeCreated, Id, @{n='File';e={$_.Properties[1].Value}}
+
+<span class="c"># Remove a policy by its GUID</span>
+CiTool.exe --remove-policy "{PUT-GUID-HERE}"
+Restart-Computer</pre></div>
+<p><b>Test:</b> after removal and reboot, <code>--list-policies</code> no longer shows it and the blocked tool runs again.</p>
+</div>
+</section>
+
+<!-- 8 -->
+<section id="trouble">
+<h2>8. Troubleshooting and cheat sheet</h2>
+<h3>Common problems</h3>
+<div class="tblwrap"><table>
+<tr><th>Symptom</th><th>Likely cause / fix</th></tr>
+<tr><td>Everything blocked after enforcing</td><td>Base template missing Windows or Microsoft rules, or you skipped the audit phase. Remove the policy from a console/VM and rebuild.</td></tr>
+<tr><td>Policy does not show in <code>--list-policies</code></td><td>Binary file not named <code>{PolicyID}.cip</code>, or XML was not built with <code>-MultiplePolicyFormat</code>.</td></tr>
+<tr><td>Supplemental policy not applied</td><td>Base lacks option 17, or <code>BasePolicyID</code> does not match the base.</td></tr>
+<tr><td>Path rule ignored</td><td>Folder is writable by non-admins (runtime FilePath protection).</td></tr>
+<tr><td>PowerShell scripts fail with "language mode" errors</td><td>Constrained Language Mode is applied because the script is not trusted. Sign or hash-allow the script.</td></tr>
+<tr><td>App updates break</td><td>Hash rules changed with the new version. Use Publisher / FilePublisher rules.</td></tr>
+</table></div>
+
+<h3>Key commands</h3>
+<div class="tblwrap"><table>
+<tr><th>Task</th><th>Command</th></tr>
+<tr><td>Create from scan</td><td><code>New-CIPolicy -Level FilePublisher -Fallback Hash -ScanPath ...</code></td></tr>
+<tr><td>Make a single rule</td><td><code>New-CIPolicyRule -DriverFilePath ... -Level ... [-Deny]</code></td></tr>
+<tr><td>Merge</td><td><code>Merge-CIPolicy -PolicyPaths a.xml,b.xml -OutputFilePath out.xml</code></td></tr>
+<tr><td>Edit options</td><td><code>Set-RuleOption -FilePath x.xml -Option 3 [-Delete]</code></td></tr>
+<tr><td>Name / ID / base link</td><td><code>Set-CIPolicyIdInfo</code></td></tr>
+<tr><td>Compile</td><td><code>ConvertFrom-CIPolicy</code></td></tr>
+<tr><td>Deploy / list / remove</td><td><code>CiTool.exe --update-policy | --list-policies | --remove-policy</code></td></tr>
+</table></div>
+
+<h3>Best-practice checklist</h3>
+<ul>
+<li>Test in a VM with a checkpoint.</li>
+<li>Always start in <b>audit</b>, review events, then enforce.</li>
+<li>Prefer <b>FilePublisher + Hash fallback</b>; avoid broad Root/PCA rules for third parties.</li>
+<li>Avoid path rules unless the folder is admin-only.</li>
+<li>Use a base policy for the baseline and supplementals for extras.</li>
+<li>Keep every XML under version control and document why each rule exists.</li>
+<li>Patch cycles: re-audit after major updates.</li>
+</ul>
+
+<h3>Next steps</h3>
+<p>Explore the App Control Wizard on your admin PC, practise signed policies, and study the Microsoft Learn pages "App Control for Business" and the recommended block rules.</p>
+<p style="color:var(--mute);font-size:13px">Command names and behaviour can differ slightly between Windows builds. Verify in your lab before production.</p>
+</section>
+
+</main>
+</div>
+<script>
+document.querySelectorAll('.cb').forEach(function(b){
+  var btn=document.createElement('button');btn.className='cp';btn.textContent='Copy';
+  btn.onclick=function(){
+    var t=b.querySelector('pre').innerText;
+    (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy'},1200)}).catch(function(){btn.textContent='Select + Ctrl+C';setTimeout(function(){btn.textContent='Copy'},1500)});
+  };
+  b.appendChild(btn);
+});
+</script>
+</body>
+</html>
