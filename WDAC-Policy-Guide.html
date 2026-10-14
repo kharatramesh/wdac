@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WDAC Policy Guide</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --text:#1b1f27; --muted:#5b6472; --line:#dde1e8;
+  --accent:#0b63ce; --accent-soft:#e6f0fd; --ok:#17794a; --ok-soft:#e3f5ec;
+  --warn:#9a5b00; --warn-soft:#fff3dc; --bad:#b3261e; --bad-soft:#fde8e6;
+  --code-bg:#0f1720; --code-text:#d8e2ee; --code-line:#233142;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1218; --panel:#161c25; --text:#e6eaf0; --muted:#9aa5b4; --line:#273140;
+    --accent:#5aa2ff; --accent-soft:#16283f; --ok:#4cc38a; --ok-soft:#12291f;
+    --warn:#f0b24d; --warn-soft:#2e2412; --bad:#ff7b72; --bad-soft:#341b1a;
+    --code-bg:#0a0e14; --code-line:#1d2735;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1218; --panel:#161c25; --text:#e6eaf0; --muted:#9aa5b4; --line:#273140;
+  --accent:#5aa2ff; --accent-soft:#16283f; --ok:#4cc38a; --ok-soft:#12291f;
+  --warn:#f0b24d; --warn-soft:#2e2412; --bad:#ff7b72; --bad-soft:#341b1a;
+  --code-bg:#0a0e14; --code-line:#1d2735;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100vh}
+nav{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:24px 18px;border-right:1px solid var(--line);background:var(--panel)}
+nav h1{font-size:17px;margin:0 0 4px}
+nav .sub{color:var(--muted);font-size:13px;margin-bottom:18px}
+nav a{display:block;padding:6px 10px;margin:2px 0;border-radius:6px;color:var(--text);text-decoration:none;font-size:14.5px}
+nav a:hover{background:var(--accent-soft)}
+nav a.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+nav a.sub2{padding-left:24px;font-size:13.5px;color:var(--muted)}
+.theme{margin-top:18px;font-size:13px;background:none;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+main{padding:32px clamp(16px,4vw,56px) 80px;max-width:1040px}
+section{margin-bottom:56px}
+h2{font-size:28px;margin:0 0 6px;letter-spacing:-.01em}
+h2 .n{display:inline-block;background:var(--accent);color:#fff;border-radius:8px;padding:0 10px;margin-right:10px;font-size:20px;vertical-align:3px}
+h3{font-size:19px;margin:32px 0 8px}
+h4{font-size:15px;margin:22px 0 6px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+p.lead{color:var(--muted);margin-top:0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:14px 0}
+.note,.warn,.tip,.danger{border-left:4px solid;border-radius:6px;padding:10px 14px;margin:14px 0;font-size:15px}
+.note{background:var(--accent-soft);border-color:var(--accent)}
+.tip{background:var(--ok-soft);border-color:var(--ok)}
+.warn{background:var(--warn-soft);border-color:var(--warn)}
+.danger{background:var(--bad-soft);border-color:var(--bad)}
+.note b:first-child,.tip b:first-child,.warn b:first-child,.danger b:first-child{margin-right:4px}
+code{font:13.5px/1.5 ui-monospace,"Cascadia Code",Consolas,monospace;background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+.code{position:relative;margin:12px 0}
+.code .lbl{position:absolute;top:0;left:0;background:var(--code-line);color:#9fb2c8;font:11px ui-monospace,Consolas,monospace;padding:2px 10px;border-radius:8px 0 8px 0;letter-spacing:.05em}
+.code button{position:absolute;top:6px;right:6px;background:var(--code-line);color:#c5d3e3;border:0;border-radius:5px;padding:3px 9px;font-size:12px;cursor:pointer}
+.code button:hover{background:#2f4157}
+pre{margin:0;background:var(--code-bg);color:var(--code-text);padding:28px 16px 14px;border-radius:8px;overflow:auto;border:1px solid var(--code-line)}
+pre code{background:none;padding:0;color:inherit;font-size:13px;line-height:1.55}
+pre .c{color:#7d8da1}
+pre .k{color:#7fc4ff}
+pre .s{color:#a8e0a2}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px;background:var(--panel);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--accent-soft);font-size:13px;text-transform:uppercase;letter-spacing:.04em}
+tr:last-child td{border-bottom:0}
+.tablewrap{overflow-x:auto}
+figure{margin:16px 0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{color:var(--muted);font-size:13.5px;text-align:center;margin-top:6px}
+.svg-box{fill:var(--panel);stroke:var(--line)}
+.svg-t{fill:var(--text);font:600 13px system-ui,sans-serif}
+.svg-s{fill:var(--muted);font:12px system-ui,sans-serif}
+.svg-a{fill:var(--accent-soft);stroke:var(--accent)}
+.svg-ok{fill:var(--ok-soft);stroke:var(--ok)}
+.svg-bad{fill:var(--bad-soft);stroke:var(--bad)}
+.svg-warn{fill:var(--warn-soft);stroke:var(--warn)}
+.svg-line{stroke:var(--muted);stroke-width:1.5;fill:none}
+.pill{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.pill.g{background:var(--ok-soft);color:var(--ok)} .pill.r{background:var(--bad-soft);color:var(--bad)} .pill.y{background:var(--warn-soft);color:var(--warn)}
+ul,ol{padding-left:22px} li{margin:4px 0}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .grid2{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="toc">
+  <h1>WDAC Policy Guide</h1>
+  <div class="sub">Instructor reference · Day 1 lab</div>
+  <a href="#s1">1. Policy structure</a>
+  <a href="#s1-xml" class="sub2">XML anatomy</a>
+  <a href="#s1-types" class="sub2">Base vs. supplemental</a>
+  <a href="#s1-eval" class="sub2">Evaluation order</a>
+  <a href="#s1-files" class="sub2">Files &amp; locations</a>
+  <a href="#s1-flow" class="sub2">Authoring workflow</a>
+  <a href="#s2">2. Find existing policies</a>
+  <a href="#s3">3. Modify policies</a>
+  <a href="#s4">4. Rules</a>
+  <a href="#s4-opt" class="sub2">Policy rule options</a>
+  <a href="#s4-file" class="sub2">File rule levels</a>
+  <a href="#s4-ops" class="sub2">Add / modify / remove</a>
+  <a href="#s5">5. Backup</a>
+  <a href="#s6">6. Rollback &amp; best practices</a>
+  <a href="#s6-bp" class="sub2">Best practices</a>
+  <a href="#cheat">Cheat sheet</a>
+  <button class="theme" id="themeBtn" type="button">Toggle theme</button>
+</nav>
+
+<main>
+
+<header style="margin-bottom:36px">
+  <h1 style="font-size:36px;margin:0 0 8px;letter-spacing:-.02em">Windows Defender Application Control (WDAC)</h1>
+  <p class="lead" style="font-size:18px">Policy structure, discovery, modification, rules, backup and rollback — with diagrams and PowerShell.</p>
+  <div class="note"><b>Before you start.</b> Run all commands in an <b>elevated</b> PowerShell on a <b>lab VM with a snapshot</b>. The <code>ConfigCI</code> cmdlets (<code>New-CIPolicy</code>, <code>Merge-CIPolicy</code>, …) are available on Windows 10/11 and Windows Server. <code>CiTool.exe</code> is built into Windows 11 22H2+ and <b>Windows Server 2025</b>; on Windows 10 and Server 2016–2022 use the file-based equivalents shown alongside.</div>
+  <div class="tip"><b>Windows Server 2025.</b> This guide applies directly: use the <code>CiTool</code> commands as the primary method (list, update, remove), with the file-copy method as a fallback. Microsoft now brands WDAC as <b>App Control for Business</b> — the tooling, XML and cmdlets are unchanged. The sample policies are in <code>C:\Windows\schemas\CodeIntegrity\ExamplePolicies\</code>; the file list in section 2D was confirmed on a Server 2025 VM. On Server, test with your server roles and management tools in <b>audit mode</b> first — blocking an admin tool or role binary on a production server is far costlier than on a workstation.</div>
+</header>
+
+<!-- ========================= 1 ========================= -->
+<section id="s1">
+  <h2><span class="n">1</span>Policy structure</h2>
+  <p class="lead">A WDAC policy is an XML document that is compiled into a binary (<code>.cip</code>) and enforced by the kernel Code Integrity engine.</p>
+
+  <h3 id="s1-xml">XML anatomy</h3>
+  <figure>
+    <svg viewBox="0 0 760 430" role="img" aria-label="Tree diagram of the SiPolicy XML elements">
+      <rect x="10" y="10" width="190" height="40" rx="8" class="svg-a"/><text x="105" y="35" text-anchor="middle" class="svg-t">&lt;SiPolicy&gt;</text>
+      <path class="svg-line" d="M200 30 H230 M230 30 V395"/>
+      <g>
+        <path class="svg-line" d="M230 30 H250"/><rect x="250" y="14" width="210" height="32" rx="6" class="svg-box"/><text x="262" y="34" class="svg-t">Header</text><text x="320" y="34" class="svg-s">VersionEx · PolicyID · BasePolicyID · PlatformID</text>
+        <path class="svg-line" d="M230 80 H250"/><rect x="250" y="64" width="210" height="32" rx="6" class="svg-warn"/><text x="262" y="84" class="svg-t">&lt;Rules&gt;</text><text x="330" y="84" class="svg-s">policy options (Audit, UMCI …)</text>
+        <path class="svg-line" d="M230 130 H250"/><rect x="250" y="114" width="210" height="32" rx="6" class="svg-box"/><text x="262" y="134" class="svg-t">&lt;EKUs&gt;</text><text x="330" y="134" class="svg-s">extended key usages</text>
+        <path class="svg-line" d="M230 180 H250"/><rect x="250" y="164" width="210" height="32" rx="6" class="svg-ok"/><text x="262" y="184" class="svg-t">&lt;FileRules&gt;</text><text x="345" y="184" class="svg-s">Allow · Deny · FileAttrib</text>
+        <path class="svg-line" d="M230 230 H250"/><rect x="250" y="214" width="210" height="32" rx="6" class="svg-ok"/><text x="262" y="234" class="svg-t">&lt;Signers&gt;</text><text x="335" y="234" class="svg-s">certificate-chain rules</text>
+        <path class="svg-line" d="M230 280 H250"/><rect x="250" y="264" width="210" height="32" rx="6" class="svg-a"/><text x="262" y="284" class="svg-t">&lt;SigningScenarios&gt;</text><text x="385" y="284" class="svg-s">where rules apply</text>
+        <path class="svg-line" d="M230 330 H250"/><rect x="250" y="314" width="210" height="32" rx="6" class="svg-box"/><text x="262" y="334" class="svg-t">&lt;UpdatePolicySigners&gt;</text><text x="400" y="334" class="svg-s">signed policy</text>
+        <path class="svg-line" d="M230 380 H250"/><rect x="250" y="364" width="210" height="32" rx="6" class="svg-box"/><text x="262" y="384" class="svg-t">&lt;HvciOptions&gt; · &lt;Settings&gt;</text>
+      </g>
+      <path class="svg-line" d="M460 280 H490 M490 240 V320"/>
+      <path class="svg-line" d="M490 240 H510 M490 280 H510 M490 320 H510"/>
+      <rect x="510" y="224" width="230" height="32" rx="6" class="svg-a"/><text x="522" y="244" class="svg-t">Value=131</text><text x="595" y="244" class="svg-s">Kernel mode (drivers)</text>
+      <rect x="510" y="264" width="230" height="32" rx="6" class="svg-a"/><text x="522" y="284" class="svg-t">Value=12</text><text x="585" y="284" class="svg-s">User mode (apps, DLLs)</text>
+      <rect x="510" y="304" width="230" height="32" rx="6" class="svg-box"/><text x="522" y="324" class="svg-s">AllowedSigners / DeniedSigners</text>
+      <path class="svg-line" d="M625 336 V350"/>
+      <rect x="510" y="350" width="230" height="46" rx="6" class="svg-box"/><text x="522" y="370" class="svg-s">FileRulesRef → IDs in &lt;FileRules&gt;</text><text x="522" y="387" class="svg-s">SignerId → IDs in &lt;Signers&gt;</text>
+    </svg>
+    <figcaption>Rules in &lt;FileRules&gt; and &lt;Signers&gt; are only <i>defined</i> there — a signing scenario must <i>reference</i> them to take effect.</figcaption>
+  </figure>
+
+  <div class="code"><span class="lbl">XML</span><button type="button">Copy</button><pre><code>&lt;SiPolicy xmlns="urn:schemas-microsoft-com:sipolicy" PolicyType="Base Policy"&gt;
+  &lt;VersionEx&gt;10.0.0.0&lt;/VersionEx&gt;
+  &lt;PlatformID&gt;{2E07F7E4-194C-4D20-B7C9-6F44A6C5A234}&lt;/PlatformID&gt;
+  &lt;PolicyID&gt;{11111111-2222-3333-4444-555555555555}&lt;/PolicyID&gt;
+  &lt;BasePolicyID&gt;{11111111-2222-3333-4444-555555555555}&lt;/BasePolicyID&gt;   &lt;!-- same as PolicyID for a base --&gt;
+
+  &lt;Rules&gt;                                    &lt;!-- policy OPTIONS --&gt;
+    &lt;Rule&gt;&lt;Option&gt;Enabled:Unsigned System Integrity Policy&lt;/Option&gt;&lt;/Rule&gt;
+    &lt;Rule&gt;&lt;Option&gt;Enabled:Audit Mode&lt;/Option&gt;&lt;/Rule&gt;
+    &lt;Rule&gt;&lt;Option&gt;Enabled:UMCI&lt;/Option&gt;&lt;/Rule&gt;
+  &lt;/Rules&gt;
+
+  &lt;EKUs /&gt;
+
+  &lt;FileRules&gt;                                &lt;!-- FILE rules --&gt;
+    &lt;Allow ID="ID_ALLOW_A_1" FriendlyName="Tool hash" Hash="9F86D0..." /&gt;
+    &lt;Deny  ID="ID_DENY_B_1"  FriendlyName="Block bad.exe" FileName="bad.exe" MinimumFileVersion="65535.65535.65535.65535" /&gt;
+  &lt;/FileRules&gt;
+
+  &lt;Signers&gt;                                  &lt;!-- PUBLISHER rules --&gt;
+    &lt;Signer ID="ID_SIGNER_MS_1" Name="Microsoft Code Signing PCA"&gt;
+      &lt;CertRoot Type="TBS" Value="A1B2C3..." /&gt;
+      &lt;CertPublisher Value="Microsoft Corporation" /&gt;
+    &lt;/Signer&gt;
+  &lt;/Signers&gt;
+
+  &lt;SigningScenarios&gt;
+    &lt;SigningScenario Value="131" ID="ID_SS_KERNEL" FriendlyName="Kernel mode"&gt;
+      &lt;ProductSigners /&gt;
+    &lt;/SigningScenario&gt;
+    &lt;SigningScenario Value="12" ID="ID_SS_USER" FriendlyName="User mode"&gt;
+      &lt;ProductSigners&gt;
+        &lt;AllowedSigners&gt;&lt;AllowedSigner SignerId="ID_SIGNER_MS_1" /&gt;&lt;/AllowedSigners&gt;
+        &lt;FileRulesRef&gt;
+          &lt;FileRuleRef RuleID="ID_ALLOW_A_1" /&gt;
+          &lt;FileRuleRef RuleID="ID_DENY_B_1" /&gt;
+        &lt;/FileRulesRef&gt;
+      &lt;/ProductSigners&gt;
+    &lt;/SigningScenario&gt;
+  &lt;/SigningScenarios&gt;
+
+  &lt;UpdatePolicySigners /&gt;
+  &lt;HvciOptions&gt;0&lt;/HvciOptions&gt;
+  &lt;Settings /&gt;
+&lt;/SiPolicy&gt;</code></pre></div>
+
+  <div class="tablewrap"><table>
+    <tr><th>Element</th><th>Purpose</th></tr>
+    <tr><td><code>VersionEx</code></td><td>Policy version (a.b.c.d). A replacement policy must carry a version <b>higher</b> than the one deployed, especially for signed policies.</td></tr>
+    <tr><td><code>PolicyID</code> / <code>BasePolicyID</code></td><td>GUID identity. Base: both equal. Supplemental: <code>BasePolicyID</code> points to the base it extends.</td></tr>
+    <tr><td><code>PlatformID</code></td><td>Constant schema/platform GUID – leave as generated.</td></tr>
+    <tr><td><code>Rules</code></td><td>Policy <i>options</i> (audit mode, UMCI, managed installer …). Not the same as file rules.</td></tr>
+    <tr><td><code>FileRules</code></td><td><code>Allow</code>, <code>Deny</code> and <code>FileAttrib</code> entries for hash, file name, path, version.</td></tr>
+    <tr><td><code>Signers</code></td><td>Certificate-based rules (Publisher, PCA, Root, WHQL …).</td></tr>
+    <tr><td><code>SigningScenarios</code></td><td>Value <b>131</b> = kernel mode (drivers), <b>12</b> = user mode (apps/DLLs/scripts).</td></tr>
+    <tr><td><code>UpdatePolicySigners</code> / <code>CiSigners</code></td><td>Who may update a signed policy / which signers are trusted by Code Integrity.</td></tr>
+    <tr><td><code>HvciOptions</code></td><td>Memory-integrity related flags (e.g. strict kernel-mode enforcement).</td></tr>
+    <tr><td><code>Settings</code></td><td>Custom key-value settings consumed by apps (e.g. via <code>Set-CIPolicySetting</code>).</td></tr>
+  </table></div>
+
+  <p>Inspect any policy from PowerShell:</p>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>$p = [xml](Get-Content C:\WDAC\Base.xml)
+$ns = New-Object Xml.XmlNamespaceManager $p.NameTable
+$ns.AddNamespace('si','urn:schemas-microsoft-com:sipolicy')
+
+$p.SiPolicy.PolicyType            # Base Policy | Supplemental Policy
+$p.SiPolicy.VersionEx
+$p.SiPolicy.PolicyID
+$p.SiPolicy.Rules.Rule.Option     # all enabled policy options
+$p.SiPolicy.FileRules.ChildNodes | Select Name, ID, FriendlyName, FileName, Hash
+$p.SiPolicy.Signers.Signer | Select ID, Name
+
+# Built-in summary cmdlets (ConfigCI)
+Get-CIPolicyInfo -FilePath C:\WDAC\Base.xml
+Get-CIPolicyIdInfo -FilePath C:\WDAC\Base.xml</code></pre></div>
+
+  <h3 id="s1-types">Base vs. supplemental policies</h3>
+  <figure>
+    <svg viewBox="0 0 760 270" role="img" aria-label="Base and supplemental policy relationship">
+      <rect x="20" y="20" width="220" height="70" rx="10" class="svg-a"/><text x="130" y="50" text-anchor="middle" class="svg-t">Base policy A</text><text x="130" y="70" text-anchor="middle" class="svg-s">PolicyID = BasePolicyID = {A}</text>
+      <rect x="20" y="130" width="220" height="70" rx="10" class="svg-ok"/><text x="130" y="160" text-anchor="middle" class="svg-t">Supplemental A1 (HR apps)</text><text x="130" y="180" text-anchor="middle" class="svg-s">BasePolicyID = {A}</text>
+      <rect x="20" y="215" width="220" height="45" rx="10" class="svg-ok"/><text x="130" y="243" text-anchor="middle" class="svg-t">Supplemental A2 (Finance)</text>
+      <path class="svg-line" d="M130 90 V130 M130 200 V215"/>
+      <rect x="300" y="20" width="220" height="70" rx="10" class="svg-a"/><text x="410" y="50" text-anchor="middle" class="svg-t">Base policy B</text><text x="410" y="70" text-anchor="middle" class="svg-s">independent, e.g. block rules</text>
+      <rect x="570" y="20" width="170" height="240" rx="10" class="svg-box"/>
+      <text x="655" y="48" text-anchor="middle" class="svg-t">Combination logic</text>
+      <text x="582" y="80" class="svg-s">• Multiple bases →</text><text x="590" y="98" class="svg-s">file must pass ALL bases</text><text x="590" y="114" class="svg-s">(intersection)</text>
+      <text x="582" y="146" class="svg-s">• Supplemental →</text><text x="590" y="164" class="svg-s">adds allow rules to ITS base</text><text x="590" y="180" class="svg-s">(union)</text>
+      <text x="582" y="212" class="svg-s">• Supplementals cannot</text><text x="590" y="230" class="svg-s">deny or change options</text>
+    </svg>
+    <figcaption>Multiple-policy format: Windows 10 1903+ / Windows 11 / Server 2022+.</figcaption>
+  </figure>
+
+  <div class="tablewrap"><table>
+    <tr><th>Type</th><th>Use case</th><th>Notes</th></tr>
+    <tr><td><span class="pill">Base</span></td><td>Core allow-list (e.g. Windows + Microsoft + Store, or Allow-all + block rules).</td><td>Defines options. Needs option 17 <i>Allow Supplemental Policies</i> to be extendable.</td></tr>
+    <tr><td><span class="pill g">Supplemental</span></td><td>Department/app-specific additions without touching the base.</td><td>Inherits options from base; only adds <i>Allow</i> rules.</td></tr>
+    <tr><td><span class="pill y">Legacy single-policy</span></td><td>Older OS builds.</td><td>One <code>SiPolicy.p7b</code> only; no supplementals.</td></tr>
+  </table></div>
+
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code># Create a new base policy from a built-in template, with a fresh GUID
+Copy-Item C:\Windows\schemas\CodeIntegrity\ExamplePolicies\DefaultWindows_Audit.xml C:\WDAC\Base.xml
+Set-CIPolicyIdInfo -FilePath C:\WDAC\Base.xml -PolicyName "Corp-Base" -ResetPolicyID
+Set-RuleOption -FilePath C:\WDAC\Base.xml -Option 17      # allow supplemental policies
+
+# Create a supplemental policy for that base
+$baseId = (Get-CIPolicyIdInfo -FilePath C:\WDAC\Base.xml).BasePolicyID   # or read from XML
+New-CIPolicy -FilePath C:\WDAC\Supp-HR.xml -ScanPath "C:\Program Files\HRApp" -Level FilePublisher -Fallback Hash -UserPEs -MultiplePolicyFormat
+Set-CIPolicyIdInfo -FilePath C:\WDAC\Supp-HR.xml -SupplementsBasePolicyID $baseId -BasePolicyToSupplementPath C:\WDAC\Base.xml -PolicyName "Corp-HR-Supp" -ResetPolicyID</code></pre></div>
+
+  <h3 id="s1-eval">How a file is evaluated</h3>
+  <figure>
+    <svg viewBox="0 0 760 130" role="img" aria-label="WDAC evaluation order">
+      <g font-family="system-ui">
+        <rect x="8" y="35" width="140" height="60" rx="8" class="svg-bad"/><text x="78" y="62" text-anchor="middle" class="svg-t">1. Explicit</text><text x="78" y="80" text-anchor="middle" class="svg-t">DENY rule?</text>
+        <rect x="170" y="35" width="140" height="60" rx="8" class="svg-ok"/><text x="240" y="62" text-anchor="middle" class="svg-t">2. Explicit</text><text x="240" y="80" text-anchor="middle" class="svg-t">ALLOW rule?</text>
+        <rect x="332" y="35" width="140" height="60" rx="8" class="svg-a"/><text x="402" y="62" text-anchor="middle" class="svg-t">3. Managed</text><text x="402" y="80" text-anchor="middle" class="svg-t">installer origin?</text>
+        <rect x="494" y="35" width="130" height="60" rx="8" class="svg-a"/><text x="559" y="62" text-anchor="middle" class="svg-t">4. ISG</text><text x="559" y="80" text-anchor="middle" class="svg-t">reputation?</text>
+        <rect x="646" y="35" width="106" height="60" rx="8" class="svg-warn"/><text x="699" y="62" text-anchor="middle" class="svg-t">5. Nothing</text><text x="699" y="80" text-anchor="middle" class="svg-t">matched</text>
+        <path class="svg-line" d="M148 65 H170 M310 65 H332 M472 65 H494 M624 65 H646"/>
+        <text x="78" y="22" text-anchor="middle" class="svg-s">yes → BLOCK</text><text x="240" y="22" text-anchor="middle" class="svg-s">yes → RUN</text><text x="402" y="22" text-anchor="middle" class="svg-s">yes → RUN</text><text x="559" y="22" text-anchor="middle" class="svg-s">good → RUN</text><text x="699" y="22" text-anchor="middle" class="svg-s">→ BLOCK</text>
+        <text x="380" y="118" text-anchor="middle" class="svg-s">In Audit Mode a "BLOCK" is only logged (event 3076) and the file still runs.</text>
+      </g>
+    </svg>
+    <figcaption>Deny always beats allow. Steps 3–4 apply only if the corresponding policy options are enabled.</figcaption>
+  </figure>
+
+  <h3 id="s1-files">Policy files &amp; where they live</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Format</th><th>Path</th></tr>
+    <tr><td>Multiple-policy (<code>{PolicyID}.cip</code>) – OS partition</td><td><code>C:\Windows\System32\CodeIntegrity\CiPolicies\Active\</code></td></tr>
+    <tr><td>Multiple-policy – EFI system partition</td><td><code>&lt;EFI&gt;\Microsoft\Boot\CiPolicies\Active\</code></td></tr>
+    <tr><td>Single-policy (legacy) – OS</td><td><code>C:\Windows\System32\CodeIntegrity\SiPolicy.p7b</code></td></tr>
+    <tr><td>Single-policy – EFI</td><td><code>&lt;EFI&gt;\Microsoft\Boot\SiPolicy.p7b</code></td></tr>
+    <tr><td>Sample policies</td><td><code>C:\Windows\schemas\CodeIntegrity\ExamplePolicies\</code></td></tr>
+    <tr><td>Event log</td><td><code>Microsoft-Windows-CodeIntegrity/Operational</code> and <code>Microsoft-Windows-AppLocker/MSI and Script</code></td></tr>
+  </table></div>
+
+  <h3 id="s1-flow">Authoring workflow</h3>
+  <figure>
+    <svg viewBox="0 0 760 110" role="img" aria-label="Authoring workflow">
+      <g>
+        <rect x="6" y="30" width="110" height="50" rx="8" class="svg-a"/><text x="61" y="60" text-anchor="middle" class="svg-t">Template / Scan</text>
+        <rect x="140" y="30" width="110" height="50" rx="8" class="svg-box"/><text x="195" y="60" text-anchor="middle" class="svg-t">XML policy</text>
+        <rect x="274" y="30" width="110" height="50" rx="8" class="svg-warn"/><text x="329" y="60" text-anchor="middle" class="svg-t">Audit mode</text>
+        <rect x="408" y="30" width="110" height="50" rx="8" class="svg-box"/><text x="463" y="60" text-anchor="middle" class="svg-t">Refine / Merge</text>
+        <rect x="542" y="30" width="100" height="50" rx="8" class="svg-a"/><text x="592" y="60" text-anchor="middle" class="svg-t">.cip binary</text>
+        <rect x="664" y="30" width="90" height="50" rx="8" class="svg-ok"/><text x="709" y="60" text-anchor="middle" class="svg-t">Enforce</text>
+        <path class="svg-line" d="M116 55 H140 M250 55 H274 M384 55 H408 M518 55 H542 M642 55 H664"/>
+        <path class="svg-line" d="M463 80 Q463 104 329 104 Q329 104 329 82"/>
+        <text x="396" y="100" text-anchor="middle" class="svg-s">repeat until audit logs are clean</text>
+      </g>
+    </svg>
+  </figure>
+</section>
+
+<!-- ========================= 2 ========================= -->
+<section id="s2">
+  <h2><span class="n">2</span>Find existing policies &amp; their use cases</h2>
+  <p class="lead">Three places to look: the <b>live system</b>, the <b>policy files</b> on disk, and the <b>built-in sample policies</b>.</p>
+
+  <h3>A. What is active on this machine?</h3>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code># Windows 11 22H2+ / Server 2025 – the easy way
+CiTool.exe --list-policies
+CiTool.exe -lp -json | ConvertFrom-Json | Select -Expand Policies |
+    Select PolicyID, FriendlyName, IsEnforced, IsSystemPolicy, IsSignedPolicy, Version
+
+# Any build: enforcement state of Code Integrity
+Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard |
+    Select CodeIntegrityPolicyEnforcementStatus, UsermodeCodeIntegrityPolicyEnforcementStatus
+#   0 = Off   1 = Audit   2 = Enforced
+
+# Any build: list the deployed binaries (multiple-policy format)
+Get-ChildItem "$env:windir\System32\CodeIntegrity\CiPolicies\Active\*.cip" |
+    Select Name, Length, LastWriteTime
+
+# Legacy single-policy file?
+Test-Path "$env:windir\System32\CodeIntegrity\SiPolicy.p7b"</code></pre></div>
+
+  <h3>B. Policies in the EFI system partition</h3>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>mountvol Y: /S                                   # mount the EFI System Partition as Y:
+Get-ChildItem Y:\EFI\Microsoft\Boot\CiPolicies\Active -ErrorAction SilentlyContinue
+Get-ChildItem Y:\EFI\Microsoft\Boot\SiPolicy.p7b      -ErrorAction SilentlyContinue
+mountvol Y: /D                                   # always unmount afterwards</code></pre></div>
+
+  <h3>C. What did the policy load / block? (event log)</h3>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code># 3099 = policy loaded (shows policy name, GUID, version, options)
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3099} -MaxEvents 10 |
+    Format-List TimeCreated, Message
+
+# 3076 = would-have-blocked (AUDIT)   3077 = blocked (ENFORCED)
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3076,3077} -MaxEvents 50 |
+    Select TimeCreated, Id, @{n='Detail';e={($_.Message -split "`n")[0]}}
+
+# Scripts / MSI (AppLocker channel): 8028 audit, 8029 enforced
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-AppLocker/MSI and Script'; Id=8028,8029} -MaxEvents 20</code></pre></div>
+
+  <h3>D. Built-in sample policies &amp; use cases</h3>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>Get-ChildItem C:\Windows\schemas\CodeIntegrity\ExamplePolicies\*.xml |
+  ForEach-Object {
+     $x = [xml](Get-Content $_.FullName)
+     [pscustomobject]@{
+        File    = $_.Name
+        Type    = $x.SiPolicy.PolicyType
+        Options = ($x.SiPolicy.Rules.Rule.Option -replace '^(Enabled|Disabled|Required|Allowed):','') -join ', '
+     }
+  } | Format-List</code></pre></div>
+
+  <div class="tablewrap"><table>
+    <tr><th>Sample policy</th><th>Use case</th></tr>
+    <tr><td><code>AllowAll.xml</code></td><td>Starting point when you only want to <b>block specific things</b> (add deny rules) – everything else runs.</td></tr>
+    <tr><td><code>AllowAll_EnableHVCI.xml</code></td><td>Allow everything but turn on memory integrity (HVCI) enforcement.</td></tr>
+    <tr><td><code>AllowMicrosoft.xml</code></td><td>Allow only Microsoft-signed code (Windows, Office, MS apps) – "Microsoft only" workstation.</td></tr>
+    <tr><td><code>DefaultWindows_Audit.xml</code></td><td><b>Best lab starting point.</b> Windows + Store apps + WHQL drivers, in <i>audit</i> mode; add your own apps via scan.</td></tr>
+    <tr><td><code>DefaultWindows_Enforced.xml</code></td><td>Same as above, enforced – use when everything is already validated.</td></tr>
+    <tr><td><code>DefaultWindows_Supplemental.xml</code></td><td>Template <b>supplemental</b> policy to extend a DefaultWindows base with extra apps (base needs option 17).</td></tr>
+    <tr><td><code>DenyAllAudit.xml</code></td><td>Audit-only policy that flags <b>every</b> binary – used to inventory what runs on a machine.</td></tr>
+    <tr><td><code>RecommendedDriverBlock_Enforced.xml</code></td><td>Microsoft's vulnerable-driver blocklist (~530 KB). Deploy as its own policy or merge into a base to block known-bad kernel drivers.</td></tr>
+    <tr><td><code>SmartAppControl.xml</code></td><td>The Smart App Control policy (reputation-based, client-focused). Reference only – not normally used on servers.</td></tr>
+  </table></div>
+  <div class="note"><b>Verified on Windows Server 2025 lab VM:</b> the nine files above are exactly what ships in <code>ExamplePolicies</code>. Microsoft's <i>Recommended block rules</i> (user-mode LOLBins) are <b>not</b> in this folder – download them from Microsoft Learn and merge them into your base. System policies appear with <code>IsSystemPolicy = True</code> in CiTool.</div>
+
+  <h3>E. Quick "audit my environment" report</h3>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>$cip = Get-ChildItem "$env:windir\System32\CodeIntegrity\CiPolicies\Active\*.cip" -ErrorAction SilentlyContinue
+$dg  = Get-CimInstance Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard
+[pscustomobject]@{
+   Computer        = $env:COMPUTERNAME
+   ActivePolicies  = $cip.Count
+   PolicyGUIDs     = ($cip.BaseName -join '; ')
+   KernelCI_Status = $dg.CodeIntegrityPolicyEnforcementStatus
+   UserCI_Status   = $dg.UsermodeCodeIntegrityPolicyEnforcementStatus
+   SingleP7b       = Test-Path "$env:windir\System32\CodeIntegrity\SiPolicy.p7b"
+}</code></pre></div>
+</section>
+
+<!-- ========================= 3 ========================= -->
+<section id="s3">
+  <h2><span class="n">3</span>How to modify policies</h2>
+  <p class="lead">Never edit the deployed <code>.cip</code>. Always edit the <b>source XML</b>, bump the version, recompile and redeploy.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 130" role="img" aria-label="Modification lifecycle">
+      <rect x="8" y="35" width="120" height="55" rx="8" class="svg-box"/><text x="68" y="58" text-anchor="middle" class="svg-t">1. Copy source</text><text x="68" y="76" text-anchor="middle" class="svg-s">XML from repo</text>
+      <rect x="150" y="35" width="120" height="55" rx="8" class="svg-a"/><text x="210" y="58" text-anchor="middle" class="svg-t">2. Edit</text><text x="210" y="76" text-anchor="middle" class="svg-s">rules / options</text>
+      <rect x="292" y="35" width="120" height="55" rx="8" class="svg-warn"/><text x="352" y="58" text-anchor="middle" class="svg-t">3. Bump version</text><text x="352" y="76" text-anchor="middle" class="svg-s">VersionEx ↑</text>
+      <rect x="434" y="35" width="120" height="55" rx="8" class="svg-a"/><text x="494" y="58" text-anchor="middle" class="svg-t">4. Convert</text><text x="494" y="76" text-anchor="middle" class="svg-s">XML → .cip</text>
+      <rect x="576" y="35" width="120" height="55" rx="8" class="svg-ok"/><text x="636" y="58" text-anchor="middle" class="svg-t">5. Deploy/test</text><text x="636" y="76" text-anchor="middle" class="svg-s">pilot → prod</text>
+      <path class="svg-line" d="M128 62 H150 M270 62 H292 M412 62 H434 M554 62 H576"/>
+      <text x="380" y="115" text-anchor="middle" class="svg-s">Back up the current XML + .cip before step 1 (see section 5)</text>
+    </svg>
+  </figure>
+
+  <h3>Modification recipes</h3>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>$xml = "C:\WDAC\Base.xml"
+
+# 0. Safety copy
+Copy-Item $xml "C:\WDAC\Backup\Base_$(Get-Date -f yyyyMMdd_HHmmss).xml"
+
+# 1. Switch Audit -> Enforced  (delete option 3) / Enforced -> Audit (add option 3)
+Set-RuleOption -FilePath $xml -Option 3 -Delete       # ENFORCE
+Set-RuleOption -FilePath $xml -Option 3               # back to AUDIT
+
+# 2. Merge in another policy's rules (e.g. Microsoft block rules, or an app scan)
+New-CIPolicy -FilePath C:\WDAC\NewApp.xml -ScanPath "C:\Program Files\NewApp" `
+             -Level FilePublisher -Fallback Hash -UserPEs
+Merge-CIPolicy -PolicyPaths $xml, C:\WDAC\NewApp.xml -OutputFilePath $xml
+
+# 3. Build rules from audit events (3076) instead of scanning
+New-CIPolicy -FilePath C:\WDAC\FromAudit.xml -Audit -Level FilePublisher -Fallback Hash -UserPEs
+Merge-CIPolicy -PolicyPaths $xml, C:\WDAC\FromAudit.xml -OutputFilePath $xml
+
+# 4. Bump version (required for a replacement to take effect)
+$v = [version](Get-CIPolicyInfo -FilePath $xml -ErrorAction SilentlyContinue).Version
+if (-not $v) { $v = [version]([xml](Get-Content $xml)).SiPolicy.VersionEx }
+Set-CIPolicyVersion -FilePath $xml -Version ([version]::new($v.Major,$v.Minor,$v.Build,$v.Revision+1))
+
+# 5. Rename / re-identify
+Set-CIPolicyIdInfo -FilePath $xml -PolicyName "Corp-Base v2"
+
+# 6. Compile to binary (multiple-policy format; file name MUST be {PolicyID}.cip)
+$id  = ([xml](Get-Content $xml)).SiPolicy.PolicyID
+ConvertFrom-CIPolicy -XmlFilePath $xml -BinaryFilePath "C:\WDAC\Out\$id.cip"</code></pre></div>
+
+  <h3>Deploy the updated policy</h3>
+  <div class="tablewrap"><table>
+    <tr><th>Method</th><th>Command / action</th></tr>
+    <tr><td>Windows 11 22H2+</td><td><code>CiTool.exe --update-policy C:\WDAC\Out\{GUID}.cip</code> (no reboot needed for most updates)</td></tr>
+    <tr><td>File copy (all builds)</td><td><code>Copy-Item C:\WDAC\Out\{GUID}.cip "$env:windir\System32\CodeIntegrity\CiPolicies\Active\"</code> then reboot (or use Microsoft's <code>RefreshPolicy.exe</code>)</td></tr>
+    <tr><td>Intune</td><td>Endpoint security → App Control for Business, or custom OMA-URI <code>./Vendor/MSFT/ApplicationControl/Policies/{GUID}/Policy</code> (base64 .cip)</td></tr>
+    <tr><td>Group Policy</td><td>Computer Config → Admin Templates → System → Device Guard → <i>Deploy Windows Defender Application Control</i> (single-policy path)</td></tr>
+    <tr><td>Configuration Manager</td><td>Endpoint Protection → App Control for Business policies</td></tr>
+  </table></div>
+  <div class="warn"><b>Version rule.</b> If you redeploy the same PolicyID with an equal or lower version, the update is ignored/rejected. Always increment <code>VersionEx</code>.</div>
+  <div class="tip"><b>Tip.</b> Add policy option <b>16 – Update Policy No Reboot</b> to the base so later updates apply without restarting.</div>
+
+  <h3>GUI alternative</h3>
+  <p>The <b>WDAC Wizard</b> (Microsoft) can open any XML, edit rules and options, merge policies, and convert to binary – good for beginners in the lab.</p>
+</section>
+
+<!-- ========================= 4 ========================= -->
+<section id="s4">
+  <h2><span class="n">4</span>Rules: types, add, modify, remove</h2>
+  <p class="lead">WDAC has two different things that people call "rules": <b>policy rule options</b> (behaviour switches) and <b>file rules</b> (what is allowed or denied).</p>
+
+  <div class="grid2">
+    <div class="card"><b>Policy rule options</b><br><span style="color:var(--muted)">Stored in <code>&lt;Rules&gt;</code>. Control how the policy behaves – audit vs enforce, scripts, managed installer, supplemental support …</span></div>
+    <div class="card"><b>File rules</b><br><span style="color:var(--muted)">Stored in <code>&lt;FileRules&gt;</code> and <code>&lt;Signers&gt;</code>. Control which binaries are allowed or denied – by hash, publisher, name, path …</span></div>
+  </div>
+
+  <h3 id="s4-opt">A. Policy rule options</h3>
+  <div class="tablewrap"><table>
+    <tr><th>#</th><th>Option</th><th>Meaning</th></tr>
+    <tr><td>0</td><td>Enabled:UMCI</td><td>Enforce user-mode (apps/DLLs), not only drivers.</td></tr>
+    <tr><td>1</td><td>Enabled:Boot Menu Protection</td><td>Hide F8 boot options when policy enforced.</td></tr>
+    <tr><td>2</td><td>Required:WHQL</td><td>Drivers must be WHQL-signed.</td></tr>
+    <tr><td>3</td><td>Enabled:Audit Mode (Default)</td><td><b>Log only</b>, do not block. Remove to enforce.</td></tr>
+    <tr><td>4</td><td>Disabled:Flight Signing</td><td>Don't trust Insider/flight-signed builds.</td></tr>
+    <tr><td>5</td><td>Enabled:Inherit Default Policy</td><td>Reserved.</td></tr>
+    <tr><td>6</td><td>Enabled:Unsigned System Integrity Policy</td><td>Policy need not be signed (<b>default for lab</b>; removable by deleting the file).</td></tr>
+    <tr><td>7</td><td>Allowed:Debug Policy Augmented</td><td>Allow debug-policy augmentation.</td></tr>
+    <tr><td>8</td><td>Required:EV Signers</td><td>Drivers must be EV signed.</td></tr>
+    <tr><td>9</td><td>Enabled:Advanced Boot Options Menu</td><td>Allow F8 menu – <b>safety net during pilots</b>.</td></tr>
+    <tr><td>10</td><td>Enabled:Boot Audit on Failure</td><td>If a boot driver is blocked, boot continues in audit – <b>safety net</b>.</td></tr>
+    <tr><td>11</td><td>Disabled:Script Enforcement</td><td>Don't enforce scripts (PowerShell Constrained Language Mode, etc.).</td></tr>
+    <tr><td>12</td><td>Required:Enforce Store Applications</td><td>Apply policy to Store/UWP apps.</td></tr>
+    <tr><td>13</td><td>Enabled:Managed Installer</td><td>Trust software deployed by a managed installer (e.g. Intune ext., MECM).</td></tr>
+    <tr><td>14</td><td>Enabled:Intelligent Security Graph Authorization</td><td>Allow apps with good Microsoft cloud reputation.</td></tr>
+    <tr><td>15</td><td>Enabled:Invalidate EAs on Reboot</td><td>Re-check ISG/managed-installer cached trust at reboot.</td></tr>
+    <tr><td>16</td><td>Enabled:Update Policy No Reboot</td><td>Allow policy updates without restart.</td></tr>
+    <tr><td>17</td><td>Enabled:Allow Supplemental Policies</td><td>Base may be extended by supplementals.</td></tr>
+    <tr><td>18</td><td>Disabled:Runtime FilePath Rule Protection</td><td>Skip the "path must be admin-writable only" check.</td></tr>
+    <tr><td>19</td><td>Enabled:Dynamic Code Security</td><td>Apply policy to .NET dynamically loaded assemblies.</td></tr>
+    <tr><td>20</td><td>Enabled:Revoked Expired As Unsigned</td><td>Treat revoked/expired-cert signed files as unsigned.</td></tr>
+  </table></div>
+
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code># List current options in a policy
+([xml](Get-Content C:\WDAC\Base.xml)).SiPolicy.Rules.Rule.Option
+
+# Print the option list supported by THIS build (the authoritative table)
+Set-RuleOption -Help
+
+# ADD an option (-Option takes the number only, not the name)
+Set-RuleOption -FilePath C:\WDAC\Base.xml -Option 13          # managed installer
+Set-RuleOption -FilePath C:\WDAC\Base.xml -Option 16          # no-reboot updates
+
+# REMOVE an option
+Set-RuleOption -FilePath C:\WDAC\Base.xml -Option 3 -Delete   # leave audit mode => ENFORCED
+
+# Recommended "pilot safety" set
+9,10 | ForEach-Object { Set-RuleOption -FilePath C:\WDAC\Base.xml -Option $_ }</code></pre></div>
+
+  <h3 id="s4-file">B. File rule types (levels)</h3>
+  <figure>
+    <svg viewBox="0 0 760 170" role="img" aria-label="Rule level strength spectrum">
+      <defs><linearGradient id="g1" x1="0" x2="1"><stop offset="0" stop-color="#17794a"/><stop offset=".5" stop-color="#d9a100"/><stop offset="1" stop-color="#b3261e"/></linearGradient></defs>
+      <rect x="20" y="20" width="720" height="10" rx="5" fill="url(#g1)"/>
+      <text x="20" y="50" class="svg-s">Most specific / most secure / most maintenance</text>
+      <text x="740" y="50" text-anchor="end" class="svg-s">Broadest / least secure / least maintenance</text>
+      <g class="svg-t" text-anchor="middle">
+        <rect x="14" y="70" width="80" height="34" rx="6" class="svg-ok"/><text x="54" y="92">Hash</text>
+        <rect x="104" y="70" width="110" height="34" rx="6" class="svg-ok"/><text x="159" y="92">FilePublisher</text>
+        <rect x="224" y="70" width="80" height="34" rx="6" class="svg-a"/><text x="264" y="92">FileName</text>
+        <rect x="314" y="70" width="90" height="34" rx="6" class="svg-a"/><text x="359" y="92">Publisher</text>
+        <rect x="414" y="70" width="90" height="34" rx="6" class="svg-warn"/><text x="459" y="92">PcaCert</text>
+        <rect x="514" y="70" width="90" height="34" rx="6" class="svg-warn"/><text x="559" y="92">LeafCert</text>
+        <rect x="614" y="70" width="126" height="34" rx="6" class="svg-bad"/><text x="677" y="92">RootCert / FilePath</text>
+      </g>
+      <text x="380" y="140" text-anchor="middle" class="svg-s">Typical choice: FilePublisher with fallback to Hash for unsigned files.</text>
+    </svg>
+  </figure>
+  <div class="tablewrap"><table>
+    <tr><th>Level</th><th>Matches on</th><th>Best for</th></tr>
+    <tr><td><b>Hash</b></td><td>Authenticode/page hash of the file</td><td>Unsigned binaries. Breaks on every update.</td></tr>
+    <tr><td><b>FileName</b></td><td>Original file name (+ min version)</td><td><b>Deny</b> rules (e.g. block <code>wmic.exe</code>); weak for allow.</td></tr>
+    <tr><td><b>FilePublisher</b></td><td>Publisher + product + file name + min version</td><td>Most apps – precise and survives updates.</td></tr>
+    <tr><td><b>Publisher</b></td><td>PCA + publisher (CN) of leaf cert</td><td>Trusted vendors – all their products.</td></tr>
+    <tr><td><b>SignedVersion</b></td><td>Publisher + minimum version</td><td>Vendor allowed only above a given version.</td></tr>
+    <tr><td><b>PcaCertificate</b></td><td>Highest intermediate CA</td><td>Broad vendor trust.</td></tr>
+    <tr><td><b>LeafCertificate</b></td><td>Exact signing cert</td><td>One specific cert (changes on renewal).</td></tr>
+    <tr><td><b>RootCertificate</b></td><td>Root CA</td><td>Rarely recommended – too broad.</td></tr>
+    <tr><td><b>WHQL / WHQLPublisher / WHQLFilePublisher</b></td><td>WHQL-signed drivers (+ publisher / file)</td><td>Kernel drivers.</td></tr>
+    <tr><td><b>FilePath</b></td><td>Path or wildcard</td><td>Only admin-writable locations (<code>C:\Program Files\...</code>). Never user-writable paths.</td></tr>
+  </table></div>
+  <div class="tablewrap"><table>
+    <tr><th>Rule action</th><th>XML</th><th>Effect</th></tr>
+    <tr><td><span class="pill g">Allow</span></td><td><code>&lt;Allow .../&gt;</code> / <code>&lt;AllowedSigner/&gt;</code></td><td>Permits matching files.</td></tr>
+    <tr><td><span class="pill r">Deny</span></td><td><code>&lt;Deny .../&gt;</code> / <code>&lt;DeniedSigner/&gt;</code></td><td>Blocks matching files – wins over any allow.</td></tr>
+    <tr><td><span class="pill y">FileAttrib</span></td><td><code>&lt;FileAttrib .../&gt;</code></td><td>Attributes used by signer-based rules to <i>narrow</i> scope (product name, file name, version) – "exceptions".</td></tr>
+  </table></div>
+
+  <h3 id="s4-ops">C. Add, modify and remove file rules</h3>
+  <h4>Add</h4>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>$xml = "C:\WDAC\Base.xml"
+
+# 1. ALLOW a publisher from an existing signed file
+$rules = New-CIPolicyRule -DriverFilePath "C:\Program Files\Vendor\app.exe" -Level Publisher
+Merge-CIPolicy -PolicyPaths $xml -OutputFilePath $xml -Rules $rules
+
+# 2. ALLOW an unsigned file by hash
+$rules = New-CIPolicyRule -DriverFilePath "C:\Tools\mytool.exe" -Level Hash
+Merge-CIPolicy -PolicyPaths $xml -OutputFilePath $xml -Rules $rules
+
+# 3. DENY a file (-Deny)
+$rules = New-CIPolicyRule -DriverFilePath "C:\Windows\System32\mshta.exe" -Level FileName -Deny
+Merge-CIPolicy -PolicyPaths $xml -OutputFilePath $xml -Rules $rules
+
+# 4. ALLOW a folder by path (admin-writable only!)
+$rules = New-CIPolicyRule -FilePathRule "C:\Program Files\CorpApps\*"
+Merge-CIPolicy -PolicyPaths $xml -OutputFilePath $xml -Rules $rules
+
+# 5. Scan an entire folder / install
+New-CIPolicy -FilePath C:\WDAC\Scan.xml -ScanPath "C:\Program Files\Vendor" -Level FilePublisher -Fallback Hash -UserPEs
+Merge-CIPolicy -PolicyPaths $xml, C:\WDAC\Scan.xml -OutputFilePath $xml
+
+# 6. Merge Microsoft's recommended block rules (downloaded from Microsoft Learn)
+Merge-CIPolicy -PolicyPaths $xml, C:\WDAC\MS_Recommended_Block_Rules.xml -OutputFilePath $xml
+
+# 7. Merge the built-in vulnerable-driver blocklist
+Merge-CIPolicy -PolicyPaths $xml, C:\Windows\schemas\CodeIntegrity\ExamplePolicies\RecommendedDriverBlock_Enforced.xml -OutputFilePath $xml</code></pre></div>
+
+  <h4>Modify</h4>
+  <p>There is no "update in place" cmdlet for a single rule — change a rule by editing its XML attributes (or removing and re-adding it).</p>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>$path = "C:\WDAC\Base.xml"
+[xml]$d = Get-Content $path
+$ns = New-Object Xml.XmlNamespaceManager $d.NameTable; $ns.AddNamespace('si','urn:schemas-microsoft-com:sipolicy')
+
+# Example: raise the minimum version on a FileAttrib / Allow rule
+$node = $d.SelectSingleNode("//si:FileRules/*[@ID='ID_ALLOW_A_1']", $ns)
+$node.SetAttribute('MinimumFileVersion','5.2.0.0')
+
+# Example: change a rule's friendly name
+$node.SetAttribute('FriendlyName','Approved HR tool v5.2+')
+
+$d.Save($path)
+Set-CIPolicyVersion -FilePath $path -Version "10.0.0.2"      # then recompile &amp; redeploy</code></pre></div>
+
+  <h4>Remove</h4>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code># List every file rule with its ID first
+([xml](Get-Content C:\WDAC\Base.xml)).SiPolicy.FileRules.ChildNodes |
+    Select Name, ID, FriendlyName, FileName, Hash | Format-Table -Auto
+
+# Remove by ID: delete the rule, its FileRuleRef and (if a signer rule) the Signer + AllowedSigner
+$path = "C:\WDAC\Base.xml"; $id = "ID_ALLOW_A_1"
+[xml]$d = Get-Content $path
+$ns = New-Object Xml.XmlNamespaceManager $d.NameTable; $ns.AddNamespace('si','urn:schemas-microsoft-com:sipolicy')
+
+$d.SelectNodes("//si:FileRules/*[@ID='$id']", $ns)     | ForEach-Object { [void]$_.ParentNode.RemoveChild($_) }
+$d.SelectNodes("//si:FileRuleRef[@RuleID='$id']", $ns) | ForEach-Object { [void]$_.ParentNode.RemoveChild($_) }
+$d.Save($path)
+
+Set-CIPolicyVersion -FilePath $path -Version "10.0.0.3"</code></pre></div>
+  <div class="warn"><b>Check references.</b> A rule ID that is still referenced in <code>&lt;SigningScenarios&gt;</code> but no longer exists makes the policy invalid and <code>ConvertFrom-CIPolicy</code> will fail – that is your free validation. The ConfigCI module also exposes <code>Remove-CIPolicyRule</code>; check <code>Get-Help Remove-CIPolicyRule -Full</code> on your build before relying on it.</div>
+</section>
+
+<!-- ========================= 5 ========================= -->
+<section id="s5">
+  <h2><span class="n">5</span>How to back up policies</h2>
+  <p class="lead">Back up <b>three things</b>: source XML (the real asset), compiled <code>.cip</code> files, and a record of what was active.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 170" role="img" aria-label="Backup scope">
+      <rect x="10" y="20" width="230" height="130" rx="10" class="svg-ok"/><text x="125" y="46" text-anchor="middle" class="svg-t">Source XML</text><text x="125" y="70" text-anchor="middle" class="svg-s">Your master copy</text><text x="125" y="90" text-anchor="middle" class="svg-s">→ Git / file share</text><text x="125" y="110" text-anchor="middle" class="svg-s">version-tagged</text>
+      <rect x="265" y="20" width="230" height="130" rx="10" class="svg-a"/><text x="380" y="46" text-anchor="middle" class="svg-t">Deployed binaries</text><text x="380" y="70" text-anchor="middle" class="svg-s">CiPolicies\Active\*.cip</text><text x="380" y="90" text-anchor="middle" class="svg-s">+ EFI partition copy</text><text x="380" y="110" text-anchor="middle" class="svg-s">+ SiPolicy.p7b if legacy</text>
+      <rect x="520" y="20" width="230" height="130" rx="10" class="svg-warn"/><text x="635" y="46" text-anchor="middle" class="svg-t">State record</text><text x="635" y="70" text-anchor="middle" class="svg-s">GUID, version, options</text><text x="635" y="90" text-anchor="middle" class="svg-s">enforcement status</text><text x="635" y="110" text-anchor="middle" class="svg-s">SHA256 hashes</text>
+    </svg>
+  </figure>
+
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code># ===== Backup-WDACPolicy.ps1 (run elevated) =====
+param(
+  [string]$SourceXmlDir = "C:\WDAC",                       # where your master XML files live
+  [string]$BackupRoot   = "D:\WDAC-Backups"
+)
+$stamp = Get-Date -Format "yyyyMMdd_HHmmss"
+$dest  = Join-Path $BackupRoot "$env:COMPUTERNAME`_$stamp"
+New-Item -ItemType Directory -Path "$dest\Active","$dest\EFI","$dest\XML" -Force | Out-Null
+
+# 1. Compiled policies (OS partition)
+$ci = "$env:windir\System32\CodeIntegrity"
+Copy-Item "$ci\CiPolicies\Active\*" "$dest\Active" -ErrorAction SilentlyContinue
+Copy-Item "$ci\SiPolicy.p7b"        $dest           -ErrorAction SilentlyContinue
+
+# 2. Compiled policies (EFI partition)
+$drive = 'Y:'
+mountvol $drive /S
+try {
+  Copy-Item "$drive\EFI\Microsoft\Boot\CiPolicies\Active\*" "$dest\EFI" -ErrorAction SilentlyContinue
+  Copy-Item "$drive\EFI\Microsoft\Boot\SiPolicy.p7b"        "$dest\EFI" -ErrorAction SilentlyContinue
+} finally { mountvol $drive /D }
+
+# 3. Source XML
+Copy-Item "$SourceXmlDir\*.xml" "$dest\XML" -ErrorAction SilentlyContinue
+
+# 4. State record + hashes
+Get-CimInstance Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard |
+   Select CodeIntegrityPolicyEnforcementStatus, UsermodeCodeIntegrityPolicyEnforcementStatus |
+   ConvertTo-Json | Out-File "$dest\state.json"
+if (Get-Command CiTool.exe -ErrorAction SilentlyContinue) { CiTool.exe -lp -json | Out-File "$dest\citool-policies.json" }
+Get-ChildItem $dest -Recurse -File | Get-FileHash -Algorithm SHA256 |
+   Select Hash, @{n='File';e={$_.Path.Replace($dest,'')}} | Export-Csv "$dest\hashes.csv" -NoTypeInformation
+
+# 5. Optional: zip + prune backups older than 30 days
+Compress-Archive -Path "$dest\*" -DestinationPath "$dest.zip" -Force
+Get-ChildItem $BackupRoot -Directory | Where LastWriteTime -lt (Get-Date).AddDays(-30) | Remove-Item -Recurse -Force
+Write-Host "Backup complete: $dest.zip"</code></pre></div>
+
+  <div class="code"><span class="lbl">Restore</span><button type="button">Copy</button><pre><code># Restore from a backup folder (reboot afterwards on file-copy deployments)
+$b = "D:\WDAC-Backups\PC01_20261014_101500"
+Remove-Item "$env:windir\System32\CodeIntegrity\CiPolicies\Active\*.cip" -Force
+Copy-Item "$b\Active\*.cip" "$env:windir\System32\CodeIntegrity\CiPolicies\Active\"
+Restart-Computer</code></pre></div>
+
+  <div class="tip"><b>Tip.</b> Keep the XML in Git (or a locked file share): tag every deployed version (<code>base-v10.0.0.7</code>), and store the policy GUID in the commit message. XML is diff-able; <code>.cip</code> is not.</div>
+  <div class="warn"><b>Signed policies.</b> Also back up the <b>signing certificate and private key</b> (HSM / vault). Lose them and you cannot update or remove the policy.</div>
+</section>
+
+<!-- ========================= 6 ========================= -->
+<section id="s6">
+  <h2><span class="n">6</span>Rollback after a policy failure &amp; best practices</h2>
+  <p class="lead">Decide fast: <b>can the machine still log on?</b> That chooses your path.</p>
+
+  <figure>
+    <svg viewBox="0 0 760 360" role="img" aria-label="Rollback decision flow">
+      <rect x="280" y="8" width="200" height="40" rx="8" class="svg-bad"/><text x="380" y="33" text-anchor="middle" class="svg-t">Policy causing outage</text>
+      <path class="svg-line" d="M380 48 V70"/>
+      <rect x="280" y="70" width="200" height="44" rx="8" class="svg-a"/><text x="380" y="90" text-anchor="middle" class="svg-t">Can you sign in and run</text><text x="380" y="106" text-anchor="middle" class="svg-t">an admin PowerShell?</text>
+      <path class="svg-line" d="M280 92 H150 V130 M480 92 H610 V130"/>
+      <text x="215" y="86" class="svg-s">YES</text><text x="535" y="86" class="svg-s">NO</text>
+
+      <rect x="30" y="130" width="240" height="46" rx="8" class="svg-ok"/><text x="150" y="150" text-anchor="middle" class="svg-t">Is policy signed?</text><text x="150" y="166" text-anchor="middle" class="svg-s">(no UnsignedSystemIntegrityPolicy)</text>
+      <path class="svg-line" d="M90 176 V210 M210 176 V210"/>
+      <text x="64" y="198" class="svg-s">No</text><text x="216" y="198" class="svg-s">Yes</text>
+      <rect x="10" y="210" width="160" height="136" rx="8" class="svg-ok"/>
+      <text x="90" y="230" text-anchor="middle" class="svg-t">FAST ROLLBACK</text>
+      <text x="22" y="252" class="svg-s">1. Soft: redeploy last-good</text><text x="22" y="268" class="svg-s">   or Audit version (higher #)</text>
+      <text x="22" y="288" class="svg-s">2. Hard: delete {GUID}.cip</text><text x="22" y="304" class="svg-s">   (Active + EFI), reboot</text>
+      <text x="22" y="324" class="svg-s">3. Win11: CiTool -rp {GUID}</text>
+      <rect x="180" y="210" width="170" height="136" rx="8" class="svg-warn"/>
+      <text x="265" y="230" text-anchor="middle" class="svg-t">SIGNED POLICY</text>
+      <text x="190" y="252" class="svg-s">Deleting the file is NOT</text><text x="190" y="268" class="svg-s">enough. Deploy a signed</text><text x="190" y="284" class="svg-s">replacement (higher ver.)</text><text x="190" y="300" class="svg-s">with Unsigned option 6 +</text><text x="190" y="316" class="svg-s">audit, signed by an</text><text x="190" y="332" class="svg-s">UpdatePolicySigner.</text>
+
+      <rect x="400" y="130" width="340" height="216" rx="8" class="svg-bad"/>
+      <text x="570" y="152" text-anchor="middle" class="svg-t">RECOVERY (blocked logon / boot loop)</text>
+      <text x="414" y="178" class="svg-s">1. Boot Windows RE (3 failed boots, or install media</text><text x="414" y="194" class="svg-s">   → Repair → Troubleshoot → Command Prompt)</text>
+      <text x="414" y="218" class="svg-s">2. Find OS drive:  dir C:\Windows (letter may differ)</text>
+      <text x="414" y="242" class="svg-s">3. del C:\Windows\System32\CodeIntegrity\CiPolicies\Active\{GUID}.cip</text>
+      <text x="414" y="266" class="svg-s">4. mountvol S: /S  → del the same .cip under</text><text x="414" y="282" class="svg-s">   S:\EFI\Microsoft\Boot\CiPolicies\Active\</text>
+      <text x="414" y="306" class="svg-s">5. (legacy) del ...\CodeIntegrity\SiPolicy.p7b + EFI copy</text>
+      <text x="414" y="330" class="svg-s">6. wpeutil reboot — then fix the XML offline</text>
+    </svg>
+    <figcaption>Fastest safe order: soft rollback → hard delete → offline recovery.</figcaption>
+  </figure>
+
+  <h3>Rollback procedures</h3>
+  <h4>1 · Soft rollback (preferred): redeploy known-good or switch to audit</h4>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>$xml = "C:\WDAC\Base.xml"
+Set-RuleOption -FilePath $xml -Option 3                          # back to AUDIT
+$v = [version]([xml](Get-Content $xml)).SiPolicy.VersionEx
+Set-CIPolicyVersion -FilePath $xml -Version ([version]::new($v.Major,$v.Minor,$v.Build,$v.Revision+1))   # MUST be higher
+$id = ([xml](Get-Content $xml)).SiPolicy.PolicyID
+ConvertFrom-CIPolicy -XmlFilePath $xml -BinaryFilePath "C:\WDAC\Out\$id.cip"
+CiTool.exe --update-policy "C:\WDAC\Out\$id.cip"                 # Win11 – immediate
+# or (all builds)
+Copy-Item "C:\WDAC\Out\$id.cip" "$env:windir\System32\CodeIntegrity\CiPolicies\Active\" -Force; Restart-Computer</code></pre></div>
+
+  <h4>2 · Hard rollback: remove the policy (unsigned policies)</h4>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>$id = "{11111111-2222-3333-4444-555555555555}"
+
+# Windows 11 22H2+
+CiTool.exe --remove-policy $id
+
+# All builds – OS partition
+Remove-Item "$env:windir\System32\CodeIntegrity\CiPolicies\Active\$id.cip" -Force
+# All builds – EFI partition
+mountvol Y: /S
+Remove-Item "Y:\EFI\Microsoft\Boot\CiPolicies\Active\$id.cip" -Force -ErrorAction SilentlyContinue
+mountvol Y: /D
+
+# Legacy single-policy format
+Remove-Item "$env:windir\System32\CodeIntegrity\SiPolicy.p7b" -Force -ErrorAction SilentlyContinue
+
+Restart-Computer</code></pre></div>
+
+  <h4>3 · Offline recovery (WinRE command prompt)</h4>
+  <div class="code"><span class="lbl">CMD (WinRE)</span><button type="button">Copy</button><pre><code>:: find the Windows drive (usually D: or C: inside WinRE)
+dir C:\Windows\System32\CodeIntegrity\CiPolicies\Active
+del C:\Windows\System32\CodeIntegrity\CiPolicies\Active\{GUID}.cip
+
+:: EFI copy
+mountvol S: /S
+del S:\EFI\Microsoft\Boot\CiPolicies\Active\{GUID}.cip
+del S:\EFI\Microsoft\Boot\SiPolicy.p7b
+wpeutil reboot</code></pre></div>
+
+  <h4>4 · Managed deployments</h4>
+  <div class="tablewrap"><table>
+    <tr><th>Channel</th><th>Rollback</th></tr>
+    <tr><td>Intune</td><td>Replace the assigned policy with the last-good/audit version (higher version), or unassign; for custom OMA-URI send the replacement base64 payload. Sync device.</td></tr>
+    <tr><td>MECM</td><td>Switch deployment to <i>Audit only</i> or redeploy last-good policy.</td></tr>
+    <tr><td>GPO</td><td>Set to Disabled / point to a good <code>.cip</code>/<code>.p7b</code> and <code>gpupdate /force</code> + reboot.</td></tr>
+  </table></div>
+
+  <div class="danger"><b>Signed policies + Secure Boot.</b> If a <i>signed</i> policy has no Unsigned option and you delete the file, the machine may refuse to boot. Recovery requires a signed update policy, or clearing Secure Boot / resetting the policy via firmware as a last resort. This is why signing happens only <b>after</b> a policy is mature.</div>
+
+  <h3>Verify after rollback</h3>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>Get-ChildItem "$env:windir\System32\CodeIntegrity\CiPolicies\Active"
+Get-CimInstance Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard |
+   Select CodeIntegrityPolicyEnforcementStatus, UsermodeCodeIntegrityPolicyEnforcementStatus
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3099} -MaxEvents 3 | fl TimeCreated, Message</code></pre></div>
+
+  <h3 id="s6-bp">Best practices</h3>
+  <div class="grid2">
+    <div class="card"><b>Design</b>
+      <ul>
+        <li>Start from <code>DefaultWindows_Audit.xml</code> or <code>AllowMicrosoft.xml</code>; never from zero.</li>
+        <li>One slim <b>base</b> + several <b>supplementals</b> per team/app.</li>
+        <li>Prefer <b>FilePublisher</b> → fallback <b>Hash</b>. Use <b>FileName</b> mainly for Deny.</li>
+        <li>FilePath only for admin-writable folders; avoid wildcards on user paths.</li>
+        <li>Merge Microsoft recommended <b>block rules</b> and the <b>vulnerable driver blocklist</b>.</li>
+        <li>Use <b>Managed Installer</b> (13) and/or <b>ISG</b> (14) to cut rule maintenance.</li>
+      </ul>
+    </div>
+    <div class="card"><b>Rollout</b>
+      <ul>
+        <li><b>Audit first</b> for 2–4 weeks; review events 3076 / 8028 and build rules from them.</li>
+        <li>Rings: lab VM → IT pilot → one department → all.</li>
+        <li>Enable options <b>9</b> and <b>10</b> and <b>16</b> during pilots.</li>
+        <li>Always increment <code>VersionEx</code>; use meaningful <code>PolicyName</code>.</li>
+        <li>Take a VM snapshot / restore point before enforcing.</li>
+        <li>Enforce only when the audit log is clean for a full business cycle.</li>
+      </ul>
+    </div>
+    <div class="card"><b>Operations</b>
+      <ul>
+        <li>Source XML in Git with change review and tags.</li>
+        <li>Automate backup (section 5) before every change.</li>
+        <li>Forward CodeIntegrity events to SIEM / Defender Advanced Hunting (<code>DeviceEvents</code> AppControl*).</li>
+        <li>Document an exception process: request → supplemental policy → expiry date.</li>
+        <li>Rehearse the WinRE recovery at least once per team.</li>
+      </ul>
+    </div>
+    <div class="card"><b>Security</b>
+      <ul>
+        <li>Sign policies only once stable; protect keys in an HSM/Key Vault.</li>
+        <li>Keep PowerShell in Constrained Language Mode (script enforcement on, option 11 <b>absent</b>).</li>
+        <li>Block known LOLBins that you do not need (e.g. <code>mshta.exe</code>, <code>wmic.exe</code>, <code>msbuild.exe</code> as appropriate).</li>
+        <li>Pair with HVCI / Secure Boot / BitLocker (protect <code>CiPolicies</code> folder integrity).</li>
+        <li>Treat Hash rules as temporary – re-scan after app updates.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= cheat ========================= -->
+<section id="cheat">
+  <h2>Cheat sheet</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Task</th><th>Command</th></tr>
+    <tr><td>New policy from template</td><td><code>Copy-Item …\DefaultWindows_Audit.xml .\Base.xml; Set-CIPolicyIdInfo -FilePath .\Base.xml -ResetPolicyID -PolicyName X</code></td></tr>
+    <tr><td>Scan an app</td><td><code>New-CIPolicy -FilePath .\App.xml -ScanPath &lt;dir&gt; -Level FilePublisher -Fallback Hash -UserPEs</code></td></tr>
+    <tr><td>Build from audit log</td><td><code>New-CIPolicy -FilePath .\A.xml -Audit -Level FilePublisher -Fallback Hash</code></td></tr>
+    <tr><td>Merge</td><td><code>Merge-CIPolicy -PolicyPaths a.xml,b.xml -OutputFilePath a.xml</code></td></tr>
+    <tr><td>Add / remove option</td><td><code>Set-RuleOption -FilePath .\Base.xml -Option 3 [-Delete]</code></td></tr>
+    <tr><td>Bump version</td><td><code>Set-CIPolicyVersion -FilePath .\Base.xml -Version 10.0.0.2</code></td></tr>
+    <tr><td>Compile</td><td><code>ConvertFrom-CIPolicy .\Base.xml .\{GUID}.cip</code></td></tr>
+    <tr><td>Deploy (Win11)</td><td><code>CiTool --update-policy .\{GUID}.cip</code></td></tr>
+    <tr><td>Deploy (all)</td><td>Copy to <code>System32\CodeIntegrity\CiPolicies\Active\</code> → reboot</td></tr>
+    <tr><td>List</td><td><code>CiTool -lp</code> · <code>Get-ChildItem …\CiPolicies\Active</code></td></tr>
+    <tr><td>Remove</td><td><code>CiTool -rp {GUID}</code> · delete .cip (Active + EFI) → reboot</td></tr>
+    <tr><td>Key events</td><td>3099 loaded · 3076 audit block · 3077 enforced block · 8028/8029 script/MSI</td></tr>
+  </table></div>
+  <p style="color:var(--muted);font-size:14px">Always validate cmdlet parameters on your OS build with <code>Get-Help &lt;cmdlet&gt; -Full</code>; ConfigCI behaviour varies slightly across Windows versions.</p>
+</section>
+
+</main>
+</div>
+
+<script>
+// Copy buttons
+document.querySelectorAll('.code button').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var text = btn.parentElement.querySelector('code').innerText;
+    var done = function(){ btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = 'Copy'; }, 1400); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function(){});
+    } else {
+      var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch(e){} document.body.removeChild(ta);
+    }
+  });
+});
+
+// Theme toggle
+document.getElementById('themeBtn').addEventListener('click', function(){
+  var root = document.documentElement;
+  var dark = root.getAttribute('data-theme') === 'dark' ||
+             (!root.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  root.setAttribute('data-theme', dark ? 'light' : 'dark');
+});
+
+// Active nav link on scroll
+var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+var targets = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+function onScroll(){
+  var y = window.scrollY + 80, idx = 0;
+  targets.forEach(function(t,i){ if (t && t.offsetTop <= y) idx = i; });
+  links.forEach(function(a,i){ a.classList.toggle('active', i === idx); });
+}
+window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+</script>
+</body>
+</html>
