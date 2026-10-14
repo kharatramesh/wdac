@@ -58,8 +58,9 @@ th{background:var(--infobg)}
 <a href="#components">3. Components &amp; types</a>
 <a href="#install">4. Setup on Server 2025 Core</a>
 <a href="#first">5. Your first policy</a>
+<a href="#basics">5b. Basic commands</a>
 <a href="#vs">6. AppLocker vs WDAC</a>
-<a href="#examples">7. Ten examples</a>
+<a href="#examples">7. Fifteen examples</a>
 <a href="#trouble">8. Troubleshooting &amp; cheat sheet</a>
 </nav>
 <main>
@@ -285,6 +286,77 @@ CiTool.exe --update-policy "C:\WDAC\Binary\$id.cip"</pre></div></li>
 <div class="tip"><b>Rollback:</b> <code>CiTool.exe --remove-policy {GUID}</code> then reboot if needed. Keep your console/VM access open until you have verified the server still works.</div>
 </section>
 
+<!-- 5b -->
+<section id="basics">
+<h2>5b. Basic commands you will use every day</h2>
+<p>Keep this section open while you work. Commands are grouped by task. <code>$w</code> is a working folder, <code>{GUID}</code> is a policy ID.</p>
+
+<h3>Check the system</h3>
+<div class="cb"><pre>$PSVersionTable.PSVersion                                   <span class="c"># PowerShell version</span>
+Get-ComputerInfo | Select-Object OsName, OsVersion           <span class="c"># OS and build</span>
+Get-Command -Module ConfigCI                                 <span class="c"># list policy cmdlets</span>
+Get-Help New-CIPolicy -Examples                              <span class="c"># built-in examples for any cmdlet</span>
+Get-Command CiTool.exe                                       <span class="c"># is CiTool present?</span></pre></div>
+
+<h3>List and inspect deployed policies</h3>
+<div class="cb"><pre>CiTool.exe --list-policies                                   <span class="c"># all policies (short: CiTool -lp)</span>
+CiTool.exe --list-policies -json                             <span class="c"># same, as JSON</span>
+Get-ChildItem C:\Windows\System32\CodeIntegrity\CiPolicies\Active   <span class="c"># the .cip files themselves</span>
+
+<span class="c"># Enforcement status: 0 = off, 1 = audit, 2 = enforced</span>
+Get-CimInstance -ClassName Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard |
+  Select-Object CodeIntegrityPolicyEnforcementStatus, UsermodeCodeIntegrityPolicyEnforcementStatus</pre></div>
+
+<h3>Read a policy XML</h3>
+<div class="cb"><pre>$x = [xml](Get-Content C:\WDAC\Policies\MyBase.xml)
+$x.SiPolicy.PolicyID                       <span class="c"># this policy's GUID</span>
+$x.SiPolicy.BasePolicyID                   <span class="c"># base GUID (same as PolicyID for a base policy)</span>
+$x.SiPolicy.PolicyType                     <span class="c"># Base Policy or Supplemental Policy</span>
+$x.SiPolicy.VersionEx                      <span class="c"># version number</span>
+$x.SiPolicy.Rules.Rule.Option              <span class="c"># all rule options set</span></pre></div>
+
+<h3>Create, edit and compile</h3>
+<div class="cb"><pre>New-CIPolicy -FilePath out.xml -ScanPath C:\Apps -Level FilePublisher -Fallback Hash -UserPEs -MultiplePolicyFormat
+Set-CIPolicyIdInfo -FilePath out.xml -PolicyName "My Policy" -ResetPolicyID
+Set-RuleOption -FilePath out.xml -Option 3                   <span class="c"># add option 3 (audit)</span>
+Set-RuleOption -FilePath out.xml -Option 3 -Delete           <span class="c"># remove option 3 (enforce)</span>
+Set-CIPolicyVersion -FilePath out.xml -Version "1.0.0.5"     <span class="c"># bump version</span>
+Merge-CIPolicy -PolicyPaths a.xml,b.xml -OutputFilePath merged.xml
+ConvertFrom-CIPolicy -XmlFilePath out.xml -BinaryFilePath "C:\WDAC\Binary\{GUID}.cip"</pre></div>
+
+<h3>Deploy, refresh and remove</h3>
+<div class="cb"><pre>CiTool.exe --update-policy "C:\WDAC\Binary\{GUID}.cip"       <span class="c"># add or replace</span>
+CiTool.exe --refresh                                         <span class="c"># reload all policies now</span>
+CiTool.exe --remove-policy "{GUID}"                          <span class="c"># remove one policy</span>
+Restart-Computer                                             <span class="c"># only when a policy needs it</span></pre></div>
+
+<h3>Watch the logs</h3>
+<div class="cb"><pre><span class="c"># Last 10 audit or block events</span>
+Get-WinEvent -LogName Microsoft-Windows-CodeIntegrity/Operational -MaxEvents 200 |
+  Where-Object Id -in 3076,3077 | Select-Object -First 10 TimeCreated, Id, Message | Format-List
+
+<span class="c"># Count events by type</span>
+Get-WinEvent -LogName Microsoft-Windows-CodeIntegrity/Operational |
+  Group-Object Id | Sort-Object Count -Descending | Select-Object Count, Name
+
+<span class="c"># Confirm a policy was loaded</span>
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3099} -MaxEvents 5</pre></div>
+
+<h3>Back up and restore</h3>
+<div class="cb"><pre>New-Item -ItemType Directory C:\WDAC\Backup -Force | Out-Null
+Copy-Item C:\Windows\System32\CodeIntegrity\CiPolicies\Active\*.cip C:\WDAC\Backup\                  <span class="c"># backup</span>
+Copy-Item C:\WDAC\Backup\{GUID}.cip C:\Windows\System32\CodeIntegrity\CiPolicies\Active\ -Force; CiTool.exe --refresh   <span class="c"># restore</span></pre></div>
+
+<h3>Event IDs to remember</h3>
+<div class="tblwrap"><table>
+<tr><th>ID</th><th>Meaning</th></tr>
+<tr><td>3099</td><td>A policy was loaded</td></tr>
+<tr><td>3076</td><td>Would have been blocked (audit mode)</td></tr>
+<tr><td>3077</td><td>Was blocked (enforced)</td></tr>
+<tr><td>3089</td><td>Signature details for the file in the neighbouring 3076/3077 event</td></tr>
+</table></div>
+</section>
+
 <!-- 6 -->
 <section id="vs">
 <h2>6. AppLocker vs WDAC</h2>
@@ -309,7 +381,7 @@ CiTool.exe --update-policy "C:\WDAC\Binary\$id.cip"</pre></div></li>
 
 <!-- 7 -->
 <section id="examples">
-<h2>7. Ten simple examples</h2>
+<h2>7. Fifteen simple examples</h2>
 <p>All examples assume the working folders from section 4 and use PowerShell on Server Core. Replace the sample paths with your own. Each example follows the same pattern: <b>define &rarr; build &rarr; deploy &rarr; test</b>.</p>
 
 <div class="note"><b>Reusable helper:</b> paste this once per session. It compiles an XML policy and deploys it.
@@ -442,6 +514,74 @@ Get-WinEvent -LogName Microsoft-Windows-CodeIntegrity/Operational |
 CiTool.exe --remove-policy "{PUT-GUID-HERE}"
 Restart-Computer</pre></div>
 <p><b>Test:</b> after removal and reboot, <code>--list-policies</code> no longer shows it and the blocked tool runs again.</p>
+</div>
+
+<div class="ex">
+<h3>Example 11: Two base policies at the same time <span class="tag a">Multiple</span></h3>
+<p><b>Define:</b> keep a baseline policy and add a separate "deny list" policy. A file must pass <b>both</b>, so the deny list only ever removes trust.</p>
+<div class="cb"><pre>$deny = "C:\WDAC\Policies\Ex11-Deny.xml"
+Copy-Item C:\Windows\schemas\CodeIntegrity\ExamplePolicies\AllowAll.xml $deny
+Set-CIPolicyIdInfo $deny -PolicyName "Ex11 Deny List" -ResetPolicyID
+$r = New-CIPolicyRule -DriverFilePath C:\Windows\System32\mshta.exe -Level FileName -SpecificFileNameLevel OriginalFileName -Deny
+Merge-CIPolicy -PolicyPaths $deny -OutputFilePath $deny -Rules $r
+Deploy-Wdac C:\WDAC\Policies\Ex2.xml       <span class="c"># base 1: Microsoft only</span>
+Deploy-Wdac $deny                          <span class="c"># base 2: allow all except mshta</span>
+CiTool.exe --list-policies</pre></div>
+<p><b>Test:</b> two base policies are listed. Microsoft tools run; <code>mshta.exe</code> is blocked by base 2; third-party unsigned tools are still blocked by base 1.</p>
+</div>
+
+<div class="ex">
+<h3>Example 12: Update an existing policy safely (new version) <span class="tag">Update</span></h3>
+<p><b>Define:</b> add a rule to a deployed policy and replace it in place.</p>
+<div class="cb"><pre>$x = "C:\WDAC\Policies\Ex2.xml"
+Copy-Item $x "$x.bak"                                        <span class="c"># keep the old copy</span>
+$r = New-CIPolicyRule -FilePathRule "C:\ApprovedTools\*"
+Merge-CIPolicy -PolicyPaths $x -OutputFilePath $x -Rules $r
+Set-CIPolicyVersion -FilePath $x -Version "1.0.0.1"
+Deploy-Wdac $x                                               <span class="c"># same GUID, so it replaces the old one</span>
+([xml](Get-Content $x)).SiPolicy.VersionEx</pre></div>
+<p><b>Test:</b> a tool in <code>C:\ApprovedTools</code> now runs. <code>CiTool --list-policies</code> shows the new version number.</p>
+</div>
+
+<div class="ex">
+<h3>Example 13: Emergency rollback to audit mode <span class="tag a">Rollback</span></h3>
+<p><b>Define:</b> enforcement broke something. Stop blocking immediately but keep logging.</p>
+<div class="cb"><pre>$x = "C:\WDAC\Policies\Ex2.xml"
+Set-RuleOption $x -Option 3                                  <span class="c"># audit mode ON</span>
+Set-CIPolicyVersion -FilePath $x -Version "1.0.0.2"
+Deploy-Wdac $x</pre></div>
+<p><b>Test:</b> the blocked app starts and event 3076 (not 3077) is logged. Fix the rules, then go back to enforce with <code>Set-RuleOption $x -Option 3 -Delete</code>.</p>
+<div class="tip">If you cannot log in at all, boot to the recovery environment and delete the policy file: <code>del C:\Windows\System32\CodeIntegrity\CiPolicies\Active\{GUID}.cip</code>. This works for unsigned policies.</div>
+</div>
+
+<div class="ex">
+<h3>Example 14: Deploy the same policy to several servers <span class="tag">Remote</span></h3>
+<p><b>Define:</b> roll one compiled policy out to a list of Core servers.</p>
+<div class="cb"><pre>$cip = Get-Item C:\WDAC\Binary\{GUID}.cip
+$servers = "CORE01","CORE02","CORE03"
+foreach ($s in $servers) {
+  Copy-Item $cip "\\$s\C$\Windows\System32\CodeIntegrity\CiPolicies\Active\"
+  Invoke-Command -ComputerName $s -ScriptBlock { CiTool.exe --refresh }
+}
+<span class="c"># Verify</span>
+Invoke-Command -ComputerName $servers -ScriptBlock { CiTool.exe --list-policies } | Select-String "Policy ID|Friendly"</pre></div>
+<p><b>Test:</b> every server lists the policy. Deploy to one pilot server first, then the rest.</p>
+</div>
+
+<div class="ex">
+<h3>Example 15: Audit report of everything that would be blocked <span class="tag a">Report</span></h3>
+<p><b>Define:</b> export the audit events to a CSV so you can review them in Excel before building rules.</p>
+<div class="cb"><pre>Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3076} |
+  ForEach-Object {
+    [pscustomobject]@{
+      Time    = $_.TimeCreated
+      File    = $_.Properties[1].Value
+      Process = $_.Properties[3].Value
+    }
+  } | Sort-Object File -Unique | Export-Csv C:\WDAC\audit-report.csv -NoTypeInformation
+Import-Csv C:\WDAC\audit-report.csv | Select-Object -First 10</pre></div>
+<p><b>Test:</b> the CSV lists each distinct file once. Approve the ones you trust and build rules for them; investigate the rest.</p>
+<div class="note">Property positions can differ between builds. If columns look wrong, run <code>$e = Get-WinEvent ... -MaxEvents 1; $e.Properties | ForEach-Object Value</code> to see the order.</div>
 </div>
 </section>
 
