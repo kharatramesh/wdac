@@ -60,7 +60,7 @@ th{background:var(--infobg)}
 <a href="#first">5. Your first policy</a>
 <a href="#basics">5b. Basic commands</a>
 <a href="#vs">6. AppLocker vs WDAC</a>
-<a href="#examples">7. Fifteen examples</a>
+<a href="#examples">7. Seventeen examples</a>
 <a href="#trouble">8. Troubleshooting &amp; cheat sheet</a>
 </nav>
 <main>
@@ -381,7 +381,7 @@ Copy-Item C:\WDAC\Backup\{GUID}.cip C:\Windows\System32\CodeIntegrity\CiPolicies
 
 <!-- 7 -->
 <section id="examples">
-<h2>7. Fifteen simple examples</h2>
+<h2>7. Seventeen simple examples</h2>
 <p>All examples assume the working folders from section 4 and use PowerShell on Server Core. Replace the sample paths with your own. Each example follows the same pattern: <b>define &rarr; build &rarr; deploy &rarr; test</b>.</p>
 
 <div class="note"><b>Reusable helper:</b> paste this once per session. It compiles an XML policy and deploys it.
@@ -582,6 +582,105 @@ Invoke-Command -ComputerName $servers -ScriptBlock { CiTool.exe --list-policies 
 Import-Csv C:\WDAC\audit-report.csv | Select-Object -First 10</pre></div>
 <p><b>Test:</b> the CSV lists each distinct file once. Approve the ones you trust and build rules for them; investigate the rest.</p>
 <div class="note">Property positions can differ between builds. If columns look wrong, run <code>$e = Get-WinEvent ... -MaxEvents 1; $e.Properties | ForEach-Object Value</code> to see the order.</div>
+</div>
+
+<div class="ex">
+<h3>Example 16: Allow the AWS Systems Manager (SSM) Agent <span class="tag a">Supplemental</span></h3>
+<p><b>Define:</b> the SSM Agent is third-party software (Amazon), so a "Microsoft only" base policy blocks it. Instead of editing the base, add a <b>supplemental policy</b> that trusts the agent by its <b>signature</b>. Rules are built from the files that are actually installed, so no names are guessed.</p>
+
+<p><b>Step 1: Look at what is installed and who signed it.</b></p>
+<div class="cb"><pre>Get-Service AmazonSSMAgent | Format-List Name, Status, StartType
+Get-ChildItem "C:\Program Files\Amazon\SSM" -Filter *.exe | ForEach-Object {
+  $s = Get-AuthenticodeSignature $_.FullName
+  [pscustomobject]@{ File=$_.Name; Status=$s.Status; Signer=$s.SignerCertificate.Subject }
+} | Format-Table -AutoSize</pre></div>
+<p>Every file should show <code>Status = Valid</code> and the same Amazon signer. If a file is <code>NotSigned</code>, the Publisher rule will not cover it and the <code>-Fallback Hash</code> below will.</p>
+
+<p><b>Step 2: Make sure the base policy accepts supplementals.</b></p>
+<div class="cb"><pre>$base = "C:\WDAC\Policies\Ex2.xml"
+Set-RuleOption $base -Option 17          <span class="c"># Allow supplemental policies</span>
+Deploy-Wdac $base</pre></div>
+
+<p><b>Step 3: Build the supplemental policy from the agent folder.</b></p>
+<div class="cb"><pre>$sup = "C:\WDAC\Policies\Ex16-SSM.xml"
+New-CIPolicy -FilePath $sup -ScanPath "C:\Program Files\Amazon\SSM" -Level Publisher -Fallback Hash -UserPEs -MultiplePolicyFormat
+Set-CIPolicyIdInfo $sup -BasePolicyToSupplementPath $base -PolicyName "Ex16 AWS SSM Agent" -ResetPolicyID
+Set-RuleOption $sup -Option 3            <span class="c"># start in AUDIT mode</span>
+Deploy-Wdac $sup</pre></div>
+<p><code>-Level Publisher</code> trusts any file signed by that Amazon certificate, so agent upgrades keep working. <code>-Fallback Hash</code> adds exact-file rules for anything unsigned. Open <code>Ex16-SSM.xml</code> and check the <code>Signers</code> section shows an Amazon signer and nothing unexpected.</p>
+
+<p><b>Step 4: Test in audit, then enforce.</b></p>
+<div class="cb"><pre>Restart-Service AmazonSSMAgent
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3076,3077} -MaxEvents 20 |
+  Where-Object Message -match 'Amazon|SSM' | Format-List TimeCreated, Id, Message
+
+<span class="c"># No SSM events? Switch to enforce and redeploy</span>
+Set-RuleOption $sup -Option 3 -Delete
+Set-CIPolicyVersion -FilePath $sup -Version "1.0.0.1"
+Deploy-Wdac $sup
+Restart-Service AmazonSSMAgent
+Get-Service AmazonSSMAgent</pre></div>
+<p><b>Test:</b> the service stays <code>Running</code>, the instance still shows <b>Online</b> in Systems Manager &rarr; Fleet Manager, and <code>CiTool --list-policies</code> shows the base plus the supplemental policy.</p>
+
+<div class="warn"><b>Run Command scripts may still fail.</b> The agent starts PowerShell for documents such as <code>AWS-RunPowerShellScript</code>. Under an enforced policy, scripts that are not trusted run in <b>Constrained Language Mode</b>, and the agent writes them to a temporary folder under <code>C:\ProgramData\Amazon\SSM</code>, which you should not allow by path. Either sign your scripts and trust that signer, or keep audit mode until you know which documents you use.</div>
+<div class="tip">Allowing the agent does not allow the apps it launches. If you use Run Command or Patch Manager, run them once in audit mode and review the 3076 events for extra files. Add other AWS software the same way, for example <code>C:\Program Files\Amazon\EC2Launch</code> or <code>C:\Program Files\Amazon\AWSCLIV2</code>, by adding a second <code>-ScanPath</code> run and merging with <code>Merge-CIPolicy</code>.</div>
+</div>
+
+<div class="ex">
+<h3>Example 17: Allow only Amazon-signed applications (plus Windows) <span class="tag">Enforce</span></h3>
+<p><b>Define:</b> one base policy where the only third-party trust is the Amazon publisher signature. Windows itself must stay allowed or the server will not run, so the starting point is <code>DefaultWindows</code>, not an empty policy. Unsigned files and other vendors are blocked, and there is <b>no hash fallback</b>, so an unsigned file in the Amazon folder is not trusted either.</p>
+
+<p><b>Step 1: List every Amazon signer actually installed.</b></p>
+<div class="cb"><pre>$paths = "C:\Program Files\Amazon"        <span class="c"># add other Amazon folders you use</span>
+Get-ChildItem $paths -Recurse -Include *.exe,*.dll -ErrorAction SilentlyContinue | ForEach-Object {
+  $s = Get-AuthenticodeSignature $_.FullName
+  [pscustomobject]@{ File=$_.FullName; Status=$s.Status; Signer=$s.SignerCertificate.Subject }
+} | Group-Object Status, Signer | Select-Object Count, Name | Format-Table -Wrap</pre></div>
+<p>Expect <code>Valid</code> with an Amazon subject. Anything <code>NotSigned</code> will be <b>blocked</b> by this policy. Note any different Amazon subject names, since each is a separate signer.</p>
+
+<p><b>Step 2: Start from the Windows baseline (audit).</b></p>
+<div class="cb"><pre>$x = "C:\WDAC\Policies\Ex17-AmazonOnly.xml"
+Copy-Item C:\Windows\schemas\CodeIntegrity\ExamplePolicies\DefaultWindows_Audit.xml $x
+Set-CIPolicyIdInfo $x -PolicyName "Ex17 Windows + Amazon Only" -ResetPolicyID</pre></div>
+
+<p><b>Step 3: Create a publisher rule for the Amazon files and merge it.</b></p>
+<div class="cb"><pre>$d    = Get-SystemDriver -ScanPath "C:\Program Files\Amazon" -UserPEs
+$rule = New-CIPolicyRule -DriverFiles $d -Level Publisher      <span class="c"># signed files only, no hash fallback</span>
+Merge-CIPolicy -PolicyPaths $x -OutputFilePath $x -Rules $rule</pre></div>
+<p><code>Publisher</code> = the issuing CA plus the Amazon subject name. Upgrades of the agent keep working. For tighter control use <code>-Level FilePublisher</code>, which also pins file name and a minimum version.</p>
+
+<p><b>Step 4: Check that the XML contains only what you intend.</b></p>
+<div class="cb"><pre>$p = [xml](Get-Content $x)
+$p.SiPolicy.Rules.Rule.Option                                  <span class="c"># should include Enabled:Audit Mode</span>
+$p.SiPolicy.Signers.Signer | Select-Object Name                <span class="c"># Microsoft/Windows signers + your Amazon signer</span></pre></div>
+
+<p><b>Step 5: Deploy in audit and review.</b></p>
+<div class="cb"><pre>Deploy-Wdac $x
+Restart-Service AmazonSSMAgent
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3076} -MaxEvents 50 |
+  Select-Object TimeCreated, Message | Format-List</pre></div>
+<p>Run for several days. Events for Amazon files mean a signer or file was missed (go back to step 1). Events for other software show what enforcement will stop.</p>
+
+<p><b>Step 6: Enforce.</b></p>
+<div class="cb"><pre>Set-RuleOption $x -Option 3 -Delete
+Set-CIPolicyVersion -FilePath $x -Version "1.0.0.1"
+Deploy-Wdac $x
+CiTool.exe --list-policies</pre></div>
+
+<p><b>Test:</b></p>
+<div class="cb"><pre>Get-Service AmazonSSMAgent                                      <span class="c"># still Running</span>
+Copy-Item C:\Windows\System32\whoami.exe C:\Temp\ -ErrorAction SilentlyContinue   <span class="c"># Windows binary: runs</span>
+<span class="c"># Run any unsigned or non-Amazon third-party .exe from C:\Temp: it must be blocked (event 3077)</span>
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3077} -MaxEvents 5 | Format-List TimeCreated, Message</pre></div>
+
+<p><b>Rollback:</b> set option 3 again (<code>Set-RuleOption $x -Option 3</code>), bump the version and redeploy, or <code>CiTool.exe --remove-policy "{GUID}"</code>.</p>
+
+<div class="warn"><b>Check before enforcing:</b>
+<ul>
+<li>Other Microsoft software (SQL Server, Exchange, agents) is <i>not</i> in <code>DefaultWindows</code>. Use <code>AllowMicrosoft.xml</code> as the starting template instead if you need it.</li>
+<li>Run Command scripts still run in Constrained Language Mode unless signed (see Example 16).</li>
+<li>Keep a VM checkpoint or console access until the server has been rebooted once under the enforced policy.</li>
+</ul></div>
 </div>
 </section>
 
