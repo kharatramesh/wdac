@@ -605,8 +605,8 @@ Deploy-Wdac $base</pre></div>
 <div class="cb"><pre>$sup = "C:\WDAC\Policies\Ex16-SSM.xml"
 New-CIPolicy -FilePath $sup -ScanPath "C:\Program Files\Amazon\SSM" -Level Publisher -Fallback Hash -UserPEs -MultiplePolicyFormat
 Set-CIPolicyIdInfo $sup -BasePolicyToSupplementPath $base -PolicyName "Ex16 AWS SSM Agent" -ResetPolicyID
-Set-RuleOption $sup -Option 3            <span class="c"># start in AUDIT mode</span>
 Deploy-Wdac $sup</pre></div>
+<p>A supplemental policy has no audit/enforce mode of its own. It follows its base policy, so to test in audit put the <b>base</b> in audit mode (<code>Set-RuleOption $base -Option 3</code>, redeploy) before this step.</p>
 <p><code>-Level Publisher</code> trusts any file signed by that Amazon certificate, so agent upgrades keep working. <code>-Fallback Hash</code> adds exact-file rules for anything unsigned. Open <code>Ex16-SSM.xml</code> and check the <code>Signers</code> section shows an Amazon signer and nothing unexpected.</p>
 
 <p><b>Step 4: Test in audit, then enforce.</b></p>
@@ -614,10 +614,10 @@ Deploy-Wdac $sup</pre></div>
 Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3076,3077} -MaxEvents 20 |
   Where-Object Message -match 'Amazon|SSM' | Format-List TimeCreated, Id, Message
 
-<span class="c"># No SSM events? Switch to enforce and redeploy</span>
-Set-RuleOption $sup -Option 3 -Delete
-Set-CIPolicyVersion -FilePath $sup -Version "1.0.0.1"
-Deploy-Wdac $sup
+<span class="c"># No SSM events? Enforce by removing audit mode from the BASE policy and redeploy both</span>
+Set-RuleOption $base -Option 3 -Delete
+Set-CIPolicyVersion -FilePath $base -Version "1.0.0.1"
+Deploy-Wdac $base
 Restart-Service AmazonSSMAgent
 Get-Service AmazonSSMAgent</pre></div>
 <p><b>Test:</b> the service stays <code>Running</code>, the instance still shows <b>Online</b> in Systems Manager &rarr; Fleet Manager, and <code>CiTool --list-policies</code> shows the base plus the supplemental policy.</p>

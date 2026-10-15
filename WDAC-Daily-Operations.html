@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WDAC Daily Operations</title>
+<style>
+:root{
+  --bg:#f6f7f9; --panel:#ffffff; --text:#1b1f27; --muted:#5b6472; --line:#dde1e8;
+  --accent:#0b63ce; --accent-soft:#e6f0fd; --ok:#17794a; --ok-soft:#e3f5ec;
+  --warn:#9a5b00; --warn-soft:#fff3dc; --bad:#b3261e; --bad-soft:#fde8e6;
+  --code-bg:#0f1720; --code-text:#d8e2ee; --code-line:#233142;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1218; --panel:#161c25; --text:#e6eaf0; --muted:#9aa5b4; --line:#273140;
+    --accent:#5aa2ff; --accent-soft:#16283f; --ok:#4cc38a; --ok-soft:#12291f;
+    --warn:#f0b24d; --warn-soft:#2e2412; --bad:#ff7b72; --bad-soft:#341b1a;
+    --code-bg:#0a0e14; --code-line:#1d2735;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1218; --panel:#161c25; --text:#e6eaf0; --muted:#9aa5b4; --line:#273140;
+  --accent:#5aa2ff; --accent-soft:#16283f; --ok:#4cc38a; --ok-soft:#12291f;
+  --warn:#f0b24d; --warn-soft:#2e2412; --bad:#ff7b72; --bad-soft:#341b1a;
+  --code-bg:#0a0e14; --code-line:#1d2735;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.layout{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+nav{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:24px 16px;border-right:1px solid var(--line);background:var(--panel)}
+nav h1{font-size:17px;margin:0 0 4px}
+nav .sub{color:var(--muted);font-size:13px;margin-bottom:16px}
+nav a{display:block;padding:5px 10px;margin:1px 0;border-radius:6px;color:var(--text);text-decoration:none;font-size:14px}
+nav a:hover{background:var(--accent-soft)}
+nav a.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+nav .grp{margin:14px 0 4px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.theme{margin-top:18px;font-size:13px;background:none;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:6px 10px;cursor:pointer}
+main{padding:32px clamp(16px,4vw,56px) 80px;max-width:1000px}
+section{margin-bottom:52px}
+h2{font-size:26px;margin:0 0 8px;letter-spacing:-.01em}
+h3{font-size:18px;margin:26px 0 8px}
+.lead{color:var(--muted);margin-top:0}
+.task-head{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.num{display:inline-flex;align-items:center;justify-content:center;width:38px;height:38px;border-radius:10px;background:var(--accent);color:#fff;font-weight:700;font-size:17px;flex:none}
+.pill{display:inline-block;font-size:12px;padding:2px 9px;border-radius:99px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+.pill.g{background:var(--ok-soft);color:var(--ok)} .pill.r{background:var(--bad-soft);color:var(--bad)} .pill.y{background:var(--warn-soft);color:var(--warn)}
+.box{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+.box div{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:15px}
+.box b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px 18px;margin:14px 0}
+.note,.warn,.tip,.danger{border-left:4px solid;border-radius:6px;padding:10px 14px;margin:14px 0;font-size:15px}
+.note{background:var(--accent-soft);border-color:var(--accent)}
+.tip{background:var(--ok-soft);border-color:var(--ok)}
+.warn{background:var(--warn-soft);border-color:var(--warn)}
+.danger{background:var(--bad-soft);border-color:var(--bad)}
+code{font:13.5px/1.5 ui-monospace,"Cascadia Code",Consolas,monospace;background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+.code{position:relative;margin:12px 0}
+.code .lbl{position:absolute;top:0;left:0;background:var(--code-line);color:#9fb2c8;font:11px ui-monospace,Consolas,monospace;padding:2px 10px;border-radius:8px 0 8px 0}
+.code button{position:absolute;top:6px;right:6px;background:var(--code-line);color:#c5d3e3;border:0;border-radius:5px;padding:3px 9px;font-size:12px;cursor:pointer}
+pre{margin:0;background:var(--code-bg);color:var(--code-text);padding:28px 16px 14px;border-radius:8px;overflow:auto;border:1px solid var(--code-line)}
+pre code{background:none;padding:0;color:inherit;font-size:13px;line-height:1.55}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px;background:var(--panel);border:1px solid var(--line)}
+th,td{text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+th{background:var(--accent-soft);font-size:12.5px;text-transform:uppercase;letter-spacing:.04em}
+.tablewrap{overflow-x:auto}
+ol.steps{counter-reset:s;list-style:none;padding-left:0}
+ol.steps>li{counter-increment:s;position:relative;padding-left:38px;margin:10px 0}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);color:var(--accent);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+figure{margin:16px 0;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{color:var(--muted);font-size:13.5px;text-align:center;margin-top:6px}
+.svg-box{fill:var(--panel);stroke:var(--line)}
+.svg-t{fill:var(--text);font:600 13px system-ui,sans-serif}
+.svg-s{fill:var(--muted);font:12px system-ui,sans-serif}
+.svg-a{fill:var(--accent-soft);stroke:var(--accent)}
+.svg-ok{fill:var(--ok-soft);stroke:var(--ok)}
+.svg-bad{fill:var(--bad-soft);stroke:var(--bad)}
+.svg-warn{fill:var(--warn-soft);stroke:var(--warn)}
+.svg-line{stroke:var(--muted);stroke-width:1.5;fill:none}
+.check{list-style:none;padding-left:0}
+.check li{padding-left:28px;position:relative}
+.check li::before{content:"✓";position:absolute;left:4px;color:var(--ok);font-weight:700}
+.bp{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.bp .card{margin:0}
+.bp h4{margin:0 0 6px;font-size:15px}
+.bp p{margin:0;color:var(--muted);font-size:14.5px}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+  .box,.bp{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="toc">
+  <h1>WDAC Daily Operations</h1>
+  <div class="sub">Windows Security Engineer runbook · Server 2025</div>
+  <a href="#start">Start here</a>
+  <a href="#list">Task list (at a glance)</a>
+  <div class="grp">Daily tasks</div>
+  <a href="#t1">1. Policy health check</a>
+  <a href="#t2">2. Review blocked files</a>
+  <a href="#t3">3. Review audit events</a>
+  <a href="#t4">4. Handle allow requests</a>
+  <a href="#t5">5. Detect policy changes</a>
+  <a href="#t6">6. Find unprotected servers</a>
+  <a href="#t7">7. Confirm backups ran</a>
+  <a href="#t8">8. Escalate security alerts</a>
+  <a href="#t9">9. Send daily report</a>
+  <div class="grp">Weekly / monthly</div>
+  <a href="#t10">10. Weekly &amp; monthly tasks</a>
+  <div class="grp">Reference</div>
+  <a href="#bp">Best practices</a>
+  <a href="#setup">One-time setup</a>
+  <a href="#glossary">Simple glossary</a>
+  <button class="theme" id="themeBtn" type="button">Toggle theme</button>
+</nav>
+
+<main>
+
+<header id="start" style="margin-bottom:36px">
+  <h1 style="font-size:34px;margin:0 0 8px;letter-spacing:-.02em">WDAC in Production: Daily Runbook</h1>
+  <p class="lead" style="font-size:18px">What to check every day, why it matters, and exactly how to do it.</p>
+  <div class="note"><b>How to use this page.</b> Each task has the same layout: <b>Why</b>, <b>Time</b>, <b>Steps</b> and a <b>script</b> you can copy. Scripts are written for <b>Windows Server 2025</b> (it has <code>CiTool.exe</code>) and are run from an <b>admin PowerShell</b> on a management server.</div>
+  <div class="warn"><b>Test first.</b> Try every script in your lab before using it in production. Change the paths (<code>C:\WDAC\...</code>) and server names to match your environment.</div>
+
+  <figure>
+    <svg viewBox="0 0 760 150" role="img" aria-label="Daily routine flow">
+      <rect x="6" y="40" width="120" height="60" rx="10" class="svg-a"/><text x="66" y="66" text-anchor="middle" class="svg-t">Check health</text><text x="66" y="84" text-anchor="middle" class="svg-s">Tasks 1, 5, 6, 7</text>
+      <rect x="156" y="40" width="130" height="60" rx="10" class="svg-warn"/><text x="221" y="66" text-anchor="middle" class="svg-t">Review events</text><text x="221" y="84" text-anchor="middle" class="svg-s">Tasks 2, 3</text>
+      <rect x="316" y="40" width="130" height="60" rx="10" class="svg-box"/><text x="381" y="66" text-anchor="middle" class="svg-t">Decide</text><text x="381" y="84" text-anchor="middle" class="svg-s">good or bad?</text>
+      <rect x="476" y="14" width="130" height="50" rx="10" class="svg-ok"/><text x="541" y="36" text-anchor="middle" class="svg-t">Allow it</text><text x="541" y="52" text-anchor="middle" class="svg-s">Task 4</text>
+      <rect x="476" y="80" width="130" height="50" rx="10" class="svg-bad"/><text x="541" y="102" text-anchor="middle" class="svg-t">Escalate</text><text x="541" y="118" text-anchor="middle" class="svg-s">Task 8</text>
+      <rect x="636" y="40" width="118" height="60" rx="10" class="svg-a"/><text x="695" y="66" text-anchor="middle" class="svg-t">Report</text><text x="695" y="84" text-anchor="middle" class="svg-s">Task 9</text>
+      <path class="svg-line" d="M126 70 H156 M286 70 H316 M446 70 L476 39 M446 70 L476 105 M606 39 L636 70 M606 105 L636 70"/>
+    </svg>
+    <figcaption>The daily loop: about 45–60 minutes for a medium environment.</figcaption>
+  </figure>
+</header>
+
+<!-- ============ LIST ============ -->
+<section id="list">
+  <h2>Task list at a glance</h2>
+  <div class="tablewrap"><table>
+    <tr><th>#</th><th>Task</th><th>How often</th><th>Time</th><th>Priority</th></tr>
+    <tr><td>1</td><td>Check that WDAC is running and enforced on every server</td><td>Daily</td><td>5 min</td><td><span class="pill r">High</span></td></tr>
+    <tr><td>2</td><td>Review files that were blocked</td><td>Daily</td><td>15 min</td><td><span class="pill r">High</span></td></tr>
+    <tr><td>3</td><td>Review audit events on test/pilot servers</td><td>Daily</td><td>10 min</td><td><span class="pill y">Medium</span></td></tr>
+    <tr><td>4</td><td>Handle requests to allow new apps</td><td>Daily</td><td>As needed</td><td><span class="pill y">Medium</span></td></tr>
+    <tr><td>5</td><td>Detect unapproved policy changes</td><td>Daily</td><td>5 min</td><td><span class="pill r">High</span></td></tr>
+    <tr><td>6</td><td>Find servers that have no policy</td><td>Daily</td><td>5 min</td><td><span class="pill r">High</span></td></tr>
+    <tr><td>7</td><td>Confirm last night's policy backup worked</td><td>Daily</td><td>2 min</td><td><span class="pill y">Medium</span></td></tr>
+    <tr><td>8</td><td>Escalate suspicious blocks to the security team</td><td>Daily</td><td>As needed</td><td><span class="pill r">High</span></td></tr>
+    <tr><td>9</td><td>Send the daily status report</td><td>Daily</td><td>5 min</td><td><span class="pill">Normal</span></td></tr>
+    <tr><td>10</td><td>Updates, clean-up, recovery drills</td><td>Weekly / Monthly</td><td>1–2 h</td><td><span class="pill">Normal</span></td></tr>
+  </table></div>
+  <div class="tip"><b>Save time.</b> Tasks 1, 2, 5, 6 and 7 can run automatically every morning as one scheduled script (see <a href="#t9">Task 9</a>). Then you only read the report and act on problems.</div>
+</section>
+
+<!-- ============ T1 ============ -->
+<section id="t1">
+  <div class="task-head"><span class="num">1</span><h2>Policy health check</h2><span class="pill r">High</span></div>
+  <div class="box">
+    <div><b>Why</b>If a policy is missing or switched to audit, servers are no longer protected.</div>
+    <div><b>Time</b>5 minutes</div>
+    <div><b>Good result</b>Every server shows the same policies, same version, enforced.</div>
+  </div>
+  <h3>Steps</h3>
+  <ol class="steps">
+    <li>Keep a list of production servers in <code>C:\WDAC\servers.txt</code> (one name per line).</li>
+    <li>Run the script below. It asks each server which policies are loaded and if they are enforced.</li>
+    <li>Look for any line where <b>Status</b> is not <code>OK</code>.</li>
+    <li>For any problem: check if a change was planned. If not, open an incident and re-deploy the approved policy (see Task 5).</li>
+  </ol>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code># Expected values - change to match your environment
+$ExpectedPolicy  = "Corp-Server-Base"
+$ExpectedVersion = "10.0.0.5"
+$servers = Get-Content C:\WDAC\servers.txt
+
+$result = Invoke-Command -ComputerName $servers -ErrorAction SilentlyContinue -ScriptBlock {
+    $dg  = Get-CimInstance Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard
+    $pol = (CiTool.exe -lp -json | ConvertFrom-Json).Policies | Where-Object { -not $_.IsSystemPolicy }
+    [pscustomobject]@{
+        Server     = $env:COMPUTERNAME
+        UserMode   = $dg.UsermodeCodeIntegrityPolicyEnforcementStatus   # 0 Off, 1 Audit, 2 Enforced
+        KernelMode = $dg.CodeIntegrityPolicyEnforcementStatus
+        Policies   = ($pol | ForEach-Object { "$($_.FriendlyName)|$($_.VersionString)|Enforced=$($_.IsEnforced)" }) -join '; '
+    }
+}
+
+$result | ForEach-Object {
+    $ok = ($_.UserMode -eq 2) -and ($_.Policies -like "*$ExpectedPolicy|$ExpectedVersion|Enforced=True*")
+    $_ | Add-Member Status ($(if ($ok) {'OK'} else {'CHECK'})) -PassThru
+} | Sort-Object Status | Format-Table Server, Status, UserMode, KernelMode, Policies -AutoSize
+
+# Servers that did not answer at all
+$servers | Where-Object { $_ -notin $result.Server } | ForEach-Object { "NO ANSWER: $_" }</code></pre></div>
+  <div class="tablewrap"><table>
+    <tr><th>You see</th><th>Meaning</th><th>What to do</th></tr>
+    <tr><td>UserMode = 2</td><td>Enforced – good</td><td>Nothing</td></tr>
+    <tr><td>UserMode = 1</td><td>Audit only – nothing is blocked</td><td>Was this planned? If not, re-deploy the enforced policy.</td></tr>
+    <tr><td>UserMode = 0</td><td>No user-mode policy</td><td>Server is unprotected. Deploy policy today.</td></tr>
+    <tr><td>Wrong version</td><td>Old policy or failed update</td><td>Re-deploy the current version.</td></tr>
+    <tr><td>NO ANSWER</td><td>Server offline or WinRM blocked</td><td>Check with the server team.</td></tr>
+  </table></div>
+  <div class="note"><b>Note.</b> Field names such as <code>VersionString</code> come from <code>CiTool -lp -json</code>. Run it once on your server to confirm the names on your build.</div>
+</section>
+
+<!-- ============ T2 ============ -->
+<section id="t2">
+  <div class="task-head"><span class="num">2</span><h2>Review blocked files</h2><span class="pill r">High</span></div>
+  <div class="box">
+    <div><b>Why</b>A block is either an attack stopped, or a business app broken. You must know which.</div>
+    <div><b>Time</b>15 minutes</div>
+    <div><b>Events</b><code>3077</code> (apps, drivers) · <code>8029</code> (scripts, MSI)</div>
+  </div>
+  <h3>Steps</h3>
+  <ol class="steps">
+    <li>Collect yesterday's block events from all servers (script below).</li>
+    <li>Group them by file. The same file blocked many times is usually one issue.</li>
+    <li>For each file, follow the decision chart.</li>
+    <li>Write down what you decided (ticket number, allowed / escalated / ignored).</li>
+  </ol>
+  <figure>
+    <svg viewBox="0 0 760 250" role="img" aria-label="Decision chart for a blocked file">
+      <rect x="290" y="8" width="180" height="40" rx="8" class="svg-a"/><text x="380" y="33" text-anchor="middle" class="svg-t">A file was blocked</text>
+      <path class="svg-line" d="M380 48 V66"/>
+      <rect x="250" y="66" width="260" height="44" rx="8" class="svg-box"/><text x="380" y="86" text-anchor="middle" class="svg-t">Is it a known business app</text><text x="380" y="102" text-anchor="middle" class="svg-t">that the owner expects to run?</text>
+      <path class="svg-line" d="M250 88 H130 V130 M510 88 H630 V130"/>
+      <text x="180" y="82" class="svg-s">YES</text><text x="555" y="82" class="svg-s">NO / NOT SURE</text>
+      <rect x="20" y="130" width="220" height="44" rx="8" class="svg-box"/><text x="130" y="150" text-anchor="middle" class="svg-t">Is there an approved ticket</text><text x="130" y="166" text-anchor="middle" class="svg-t">for it?</text>
+      <path class="svg-line" d="M70 174 V196 M190 174 V196"/>
+      <text x="40" y="190" class="svg-s">Yes</text><text x="196" y="190" class="svg-s">No</text>
+      <rect x="6" y="196" width="128" height="46" rx="8" class="svg-ok"/><text x="70" y="216" text-anchor="middle" class="svg-t">Allow it</text><text x="70" y="232" text-anchor="middle" class="svg-s">Task 4</text>
+      <rect x="146" y="196" width="134" height="46" rx="8" class="svg-warn"/><text x="213" y="216" text-anchor="middle" class="svg-t">Ask owner to</text><text x="213" y="232" text-anchor="middle" class="svg-s">raise a request</text>
+      <rect x="520" y="130" width="220" height="112" rx="8" class="svg-bad"/><text x="630" y="152" text-anchor="middle" class="svg-t">Treat as suspicious</text>
+      <text x="534" y="176" class="svg-s">• Unknown name or odd path</text><text x="534" y="194" class="svg-s">  (Temp, Downloads, AppData)</text><text x="534" y="212" class="svg-s">• Unsigned or strange signer</text><text x="534" y="232" class="svg-s">→ Escalate (Task 8)</text>
+    </svg>
+  </figure>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>$servers = Get-Content C:\WDAC\servers.txt
+$since   = (Get-Date).AddDays(-1)
+
+$blocks = Invoke-Command -ComputerName $servers -ErrorAction SilentlyContinue -ScriptBlock {
+    param($since)
+    $logs = @(
+        @{LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3077; StartTime=$since},
+        @{LogName='Microsoft-Windows-AppLocker/MSI and Script';  Id=8029; StartTime=$since}
+    )
+    foreach ($f in $logs) {
+        Get-WinEvent -FilterHashtable $f -ErrorAction SilentlyContinue | ForEach-Object {
+            # Turn the event data into simple name/value pairs
+            $d = @{}
+            ([xml]$_.ToXml()).Event.EventData.Data | ForEach-Object { $d[$_.Name] = $_.'#text' }
+            [pscustomobject]@{
+                Server  = $env:COMPUTERNAME
+                Time    = $_.TimeCreated
+                EventId = $_.Id
+                File    = $d['File Name'] + $d['FilePath']
+                Process = $d['Process Name']
+                Policy  = $d['PolicyName']
+                SHA256  = $d['SHA256 Hash'] + $d['Sha256Hash']
+            }
+        }
+    }
+} -ArgumentList $since
+
+# One line per file, with how many times and on how many servers
+$blocks | Group-Object File | Sort-Object Count -Descending | ForEach-Object {
+    [pscustomobject]@{
+        File    = $_.Name
+        Times   = $_.Count
+        Servers = ($_.Group.Server | Sort-Object -Unique) -join ', '
+        Process = ($_.Group.Process | Select-Object -First 1)
+    }
+} | Format-Table -AutoSize -Wrap
+
+$blocks | Export-Csv "C:\WDAC\Reports\Blocks_$(Get-Date -f yyyyMMdd).csv" -NoTypeInformation</code></pre></div>
+  <div class="note"><b>Event field names.</b> The names inside the event (<code>File Name</code>, <code>Process Name</code>, <code>PolicyName</code> …) can differ slightly between event types. If a column is empty, open one event in Event Viewer → <b>Details</b> → <b>XML View</b> and use the names you see there.</div>
+</section>
+
+<!-- ============ T3 ============ -->
+<section id="t3">
+  <div class="task-head"><span class="num">3</span><h2>Review audit events (test &amp; pilot servers)</h2><span class="pill y">Medium</span></div>
+  <div class="box">
+    <div><b>Why</b>Audit mode shows what <i>would</i> be blocked. Fix it before you enforce.</div>
+    <div><b>Time</b>10 minutes</div>
+    <div><b>Events</b><code>3076</code> (apps, drivers) · <code>8028</code> (scripts, MSI)</div>
+  </div>
+  <h3>Steps</h3>
+  <ol class="steps">
+    <li>Run the Task 2 script on your <b>pilot</b> server list, but change the IDs to <code>3076</code> and <code>8028</code>.</li>
+    <li>Mark each file: <b>needed</b> (make a rule) or <b>not needed</b> (leave it blocked).</li>
+    <li>For needed files, build rules straight from the audit log (below) and add them in a supplemental policy.</li>
+    <li>When a pilot server shows <b>zero</b> new audit events for a full business cycle (often 2–4 weeks), it is ready to enforce.</li>
+  </ol>
+  <div class="code"><span class="lbl">PowerShell – run on the pilot server</span><button type="button">Copy</button><pre><code># Build allow rules from this server's audit events
+New-CIPolicy -Audit -FilePath C:\WDAC\Work\FromAudit.xml `
+             -Level FilePublisher -Fallback Hash -UserPEs -MultiplePolicyFormat
+
+# ALWAYS read the result before using it - remove anything you do not want to allow
+([xml](Get-Content C:\WDAC\Work\FromAudit.xml)).SiPolicy.FileRules.ChildNodes |
+    Select-Object Name, FriendlyName, FileName | Format-Table -AutoSize</code></pre></div>
+  <div class="danger"><b>Careful.</b> <code>-Audit</code> turns <i>everything</i> that ran into an allow rule – including malware if it ran in audit mode. Review every line.</div>
+</section>
+
+<!-- ============ T4 ============ -->
+<section id="t4">
+  <div class="task-head"><span class="num">4</span><h2>Handle requests to allow new apps</h2><span class="pill y">Medium</span></div>
+  <div class="box">
+    <div><b>Why</b>Business needs new tools. Allow them safely, with a record.</div>
+    <div><b>Time</b>15–30 min per request</div>
+    <div><b>Rule</b>No ticket, no change.</div>
+  </div>
+  <h3>Steps</h3>
+  <ol class="steps">
+    <li><b>Check the request.</b> It must have: app name, version, vendor, business owner, servers, and approval from the owner's manager.</li>
+    <li><b>Check the file.</b> Is it signed by the real vendor? Is it clean in Microsoft Defender?</li>
+    <li><b>Make the rule</b> in a <b>supplemental policy</b> – never edit the main (base) policy for one app.</li>
+    <li><b>Test</b> on one pilot server. Ask the owner to confirm the app works.</li>
+    <li><b>Deploy</b> to the requested servers, save the XML in your repository, close the ticket.</li>
+  </ol>
+  <div class="code"><span class="lbl">PowerShell – check the file</span><button type="button">Copy</button><pre><code>$file = "D:\Install\VendorApp\app.exe"
+Get-AuthenticodeSignature $file | Select-Object Status, @{n='Signer';e={$_.SignerCertificate.Subject}}
+Get-FileHash $file -Algorithm SHA256
+Start-MpScan -ScanType CustomScan -ScanPath $file          # Microsoft Defender scan</code></pre></div>
+  <div class="code"><span class="lbl">PowerShell – create &amp; deploy the supplemental policy</span><button type="button">Copy</button><pre><code>$app      = "VendorApp"
+$base     = "C:\WDAC\Repo\Corp-Server-Base.xml"            # your approved base policy
+$supp     = "C:\WDAC\Repo\Supp-$app.xml"
+$baseId   = ([xml](Get-Content $base)).SiPolicy.BasePolicyID
+
+# 1. Scan the installed app folder and create rules (publisher first, hash if unsigned)
+New-CIPolicy -FilePath $supp -ScanPath "C:\Program Files\VendorApp" `
+             -Level FilePublisher -Fallback Hash -UserPEs -MultiplePolicyFormat
+
+# 2. Turn it into a supplemental policy for the base
+Set-CIPolicyIdInfo -FilePath $supp -SupplementsBasePolicyID $baseId -PolicyName "Supp-$app-TICKET1234" -ResetPolicyID
+
+# 3. Compile to binary
+$id = ([xml](Get-Content $supp)).SiPolicy.PolicyID
+ConvertFrom-CIPolicy -XmlFilePath $supp -BinaryFilePath "C:\WDAC\Out\$id.cip"
+
+# 4. Deploy to ONE pilot server first
+$s = New-PSSession -ComputerName PILOT-SRV01
+Copy-Item "C:\WDAC\Out\$id.cip" -Destination "C:\Windows\Temp\" -ToSession $s
+Invoke-Command -Session $s -ScriptBlock { param($id) CiTool.exe --update-policy "C:\Windows\Temp\$id.cip" } -ArgumentList $id
+Remove-PSSession $s</code></pre></div>
+  <div class="tip"><b>Good habit.</b> Put the ticket number in the policy name. Months later you will know why each rule exists.</div>
+</section>
+
+<!-- ============ T5 ============ -->
+<section id="t5">
+  <div class="task-head"><span class="num">5</span><h2>Detect unapproved policy changes</h2><span class="pill r">High</span></div>
+  <div class="box">
+    <div><b>Why</b>An attacker or a mistake can replace or delete a policy file.</div>
+    <div><b>Time</b>5 minutes</div>
+    <div><b>Good result</b>Every <code>.cip</code> file on every server matches the approved list.</div>
+  </div>
+  <h3>Steps</h3>
+  <ol class="steps">
+    <li>After every approved deployment, update the <b>baseline</b> file: <code>C:\WDAC\baseline.csv</code> (file name + SHA256 hash).</li>
+    <li>Each day, compare each server's policy files to the baseline (script below).</li>
+    <li>Any <b>EXTRA</b>, <b>MISSING</b> or <b>CHANGED</b> file = investigate. Check change tickets first.</li>
+    <li>If no ticket explains it, treat it as a security incident (Task 8) and restore the approved policy from backup.</li>
+  </ol>
+  <div class="code"><span class="lbl">PowerShell – create the baseline (after an approved change)</span><button type="button">Copy</button><pre><code>Get-ChildItem C:\WDAC\Out\Approved\*.cip | Get-FileHash -Algorithm SHA256 |
+    Select-Object @{n='Name';e={Split-Path $_.Path -Leaf}}, Hash |
+    Export-Csv C:\WDAC\baseline.csv -NoTypeInformation</code></pre></div>
+  <div class="code"><span class="lbl">PowerShell – daily compare</span><button type="button">Copy</button><pre><code>$baseline = Import-Csv C:\WDAC\baseline.csv
+$servers  = Get-Content C:\WDAC\servers.txt
+
+$live = Invoke-Command -ComputerName $servers -ErrorAction SilentlyContinue -ScriptBlock {
+    Get-ChildItem "$env:windir\System32\CodeIntegrity\CiPolicies\Active\*.cip" |
+        Get-FileHash -Algorithm SHA256 |
+        Select-Object @{n='Server';e={$env:COMPUTERNAME}}, @{n='Name';e={Split-Path $_.Path -Leaf}}, Hash
+}
+
+foreach ($srv in ($live.Server | Sort-Object -Unique)) {
+    $mine = $live | Where-Object Server -eq $srv
+    foreach ($b in $baseline) {
+        $m = $mine | Where-Object Name -eq $b.Name
+        if (-not $m)                { "$srv  MISSING  $($b.Name)" }
+        elseif ($m.Hash -ne $b.Hash){ "$srv  CHANGED  $($b.Name)" }
+    }
+    $mine | Where-Object { $_.Name -notin $baseline.Name } | ForEach-Object { "$srv  EXTRA    $($_.Name)" }
+}</code></pre></div>
+  <div class="note"><b>Note.</b> Windows itself may place system policies in the Active folder. Add those to the baseline once you have confirmed they are from Microsoft.</div>
+</section>
+
+<!-- ============ T6 ============ -->
+<section id="t6">
+  <div class="task-head"><span class="num">6</span><h2>Find servers with no policy</h2><span class="pill r">High</span></div>
+  <div class="box">
+    <div><b>Why</b>New servers are often built without WDAC. They are your weakest point.</div>
+    <div><b>Time</b>5 minutes</div>
+    <div><b>Good result</b>Every server in Active Directory is in <code>servers.txt</code> and protected.</div>
+  </div>
+  <h3>Steps</h3>
+  <ol class="steps">
+    <li>Get all enabled Windows Server computers from Active Directory.</li>
+    <li>Compare with your <code>servers.txt</code> list.</li>
+    <li>For each new server: confirm owner, add it to the list, deploy the <b>audit</b> policy first, then follow the normal path to enforce.</li>
+  </ol>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>Import-Module ActiveDirectory
+$inAD   = Get-ADComputer -Filter 'OperatingSystem -like "*Server*" -and Enabled -eq $true' -Properties OperatingSystem, whenCreated |
+          Select-Object Name, OperatingSystem, whenCreated
+$inList = Get-Content C:\WDAC\servers.txt
+
+# Servers in AD but not managed by WDAC yet
+$inAD | Where-Object { $_.Name -notin $inList } | Sort-Object whenCreated -Descending | Format-Table -AutoSize
+
+# Servers in the list but gone from AD (clean up the list)
+$inList | Where-Object { $_ -notin $inAD.Name }</code></pre></div>
+  <div class="tip"><b>Fix the cause.</b> Add the WDAC policy to your server <b>build image</b> or build script so new servers are protected from day one.</div>
+</section>
+
+<!-- ============ T7 ============ -->
+<section id="t7">
+  <div class="task-head"><span class="num">7</span><h2>Confirm the backup ran</h2><span class="pill y">Medium</span></div>
+  <div class="box">
+    <div><b>Why</b>If something breaks, you need the last good policy within minutes.</div>
+    <div><b>Time</b>2 minutes</div>
+    <div><b>Good result</b>Backup task result = 0, and a new backup folder from last night.</div>
+  </div>
+  <h3>Steps</h3>
+  <ol class="steps">
+    <li>Check the scheduled backup task result.</li>
+    <li>Check the newest backup folder date and that it contains <code>.cip</code> and <code>.xml</code> files.</li>
+    <li>If it failed, run it by hand now and find the cause (disk full, permissions, share offline).</li>
+  </ol>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>Get-ScheduledTask -TaskName "WDAC-Backup" | Get-ScheduledTaskInfo |
+    Select-Object LastRunTime, LastTaskResult, NextRunTime        # LastTaskResult 0 = success
+
+$last = Get-ChildItem D:\WDAC-Backups -Directory | Sort-Object LastWriteTime -Descending | Select-Object -First 1
+"Newest backup: $($last.Name)  ($($last.LastWriteTime))"
+"Policy files:  " + (Get-ChildItem $last.FullName -Recurse -Include *.cip, *.xml).Count
+
+# Also check the source repository is up to date
+git -C C:\WDAC\Repo status --short</code></pre></div>
+  <div class="note">The full backup script is in the companion guide <b>WDAC-Policy-Guide.html → section 5</b>.</div>
+</section>
+
+<!-- ============ T8 ============ -->
+<section id="t8">
+  <div class="task-head"><span class="num">8</span><h2>Escalate suspicious blocks</h2><span class="pill r">High</span></div>
+  <div class="box">
+    <div><b>Why</b>WDAC stopped it, but the attacker may still be on the server.</div>
+    <div><b>Time</b>As needed</div>
+    <div><b>Owner</b>You collect facts → Security team (SOC) investigates.</div>
+  </div>
+  <h3>Warning signs</h3>
+  <ul class="check">
+    <li>File runs from <code>Temp</code>, <code>Downloads</code>, <code>AppData</code>, <code>ProgramData</code> or <code>C:\Users\Public</code>.</li>
+    <li>Started by <code>powershell.exe</code>, <code>cmd.exe</code>, <code>wscript.exe</code>, <code>mshta.exe</code>, <code>rundll32.exe</code> or an Office app.</li>
+    <li>Same unknown file blocked on many servers in a short time.</li>
+    <li>Unsigned file with a name that copies a Windows file (e.g. <code>svch0st.exe</code>).</li>
+    <li>Blocked driver (kernel) – often a "bring your own vulnerable driver" attack.</li>
+  </ul>
+  <h3>Steps</h3>
+  <ol class="steps">
+    <li><b>Do not allow the file.</b> Do not delete it either – it is evidence.</li>
+    <li>Collect facts (script below): server, time, file path, hash, parent process, user.</li>
+    <li>Check the hash in Microsoft Defender / your threat intel tool.</li>
+    <li>Open a security incident and send the facts to the SOC.</li>
+    <li>Follow the SOC's instructions (isolate server, reset passwords, etc.).</li>
+  </ol>
+  <div class="code"><span class="lbl">PowerShell – evidence pack</span><button type="button">Copy</button><pre><code>$server = "APP-SRV07"
+$file   = "C:\Users\Public\update.exe"
+$out    = "C:\WDAC\Incidents\$server`_$(Get-Date -f yyyyMMdd_HHmm)"
+New-Item -ItemType Directory $out -Force | Out-Null
+
+Invoke-Command -ComputerName $server -ScriptBlock {
+    param($file)
+    [pscustomobject]@{
+        Hash      = (Get-FileHash $file -Algorithm SHA256 -ErrorAction SilentlyContinue).Hash
+        Signature = (Get-AuthenticodeSignature $file -ErrorAction SilentlyContinue).Status
+        Created   = (Get-Item $file -ErrorAction SilentlyContinue).CreationTime
+        Events    = Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational'; Id=3077} -MaxEvents 200 |
+                    Where-Object Message -like "*$(Split-Path $file -Leaf)*" | Select-Object TimeCreated, Message
+        LoggedOn  = (quser 2>$null)
+    }
+} -ArgumentList $file | ConvertTo-Json -Depth 4 | Out-File "$out\evidence.json"
+"Evidence saved to $out"</code></pre></div>
+</section>
+
+<!-- ============ T9 ============ -->
+<section id="t9">
+  <div class="task-head"><span class="num">9</span><h2>Send the daily report</h2><span class="pill">Normal</span></div>
+  <div class="box">
+    <div><b>Why</b>Managers and the SOC see the status. You have a written history.</div>
+    <div><b>Time</b>5 minutes (automated)</div>
+    <div><b>Content</b>Health, blocks, changes, new servers, backup, open requests.</div>
+  </div>
+  <h3>Simple report template</h3>
+  <div class="card" style="font-family:ui-monospace,Consolas,monospace;font-size:13.5px;white-space:pre-wrap">WDAC Daily Report – 14 Oct 2026
+---------------------------------------
+Servers checked ........ 120
+Enforced (OK) .......... 118
+Problems ............... 2   (DB-SRV03 audit mode – CHG5521 planned; WEB-SRV11 no answer)
+Blocks (24h) ........... 37 events / 6 unique files
+  - Allowed (ticket) ... 1   (VendorApp 4.2 – REQ1234)
+  - Escalated to SOC ... 1   (C:\Users\Public\update.exe on APP-SRV07 – INC9876)
+  - No action needed ... 4
+Policy changes ......... none unapproved
+New servers found ...... 1   (FILE-SRV22 – audit policy deployed)
+Backup ................. OK (02:00)
+Open allow requests .... 3</div>
+
+  <h3>Run the daily checks automatically</h3>
+  <ol class="steps">
+    <li>Save the scripts from Tasks 1, 2, 5, 6 and 7 as files in <code>C:\WDAC\Scripts\</code>.</li>
+    <li>Create one "morning" script that runs them and saves the output to a dated report file.</li>
+    <li>Schedule it for 06:00 on the management server, using a <b>group Managed Service Account (gMSA)</b> or a dedicated service account – not your own account.</li>
+    <li>Each morning, open the report, act on problems, and send the summary.</li>
+  </ol>
+  <div class="code"><span class="lbl">PowerShell – C:\WDAC\Scripts\Morning.ps1</span><button type="button">Copy</button><pre><code>$day    = Get-Date -Format yyyyMMdd
+$report = "C:\WDAC\Reports\Daily_$day.txt"
+
+"WDAC Daily Report - $(Get-Date -Format 'dd MMM yyyy')" | Out-File $report
+foreach ($s in "1-Health","2-Blocks","5-Drift","6-NewServers","7-Backup") {
+    "`n===== $s =====" | Out-File $report -Append
+    try   { & "C:\WDAC\Scripts\$s.ps1" *&gt;&amp;1 | Out-String -Width 250 | Out-File $report -Append }
+    catch { "FAILED: $($_.Exception.Message)" | Out-File $report -Append }
+}
+"Report saved: $report"</code></pre></div>
+  <div class="code"><span class="lbl">PowerShell – schedule it (run once)</span><button type="button">Copy</button><pre><code>$action  = New-ScheduledTaskAction -Execute "powershell.exe" `
+           -Argument "-NoProfile -ExecutionPolicy Bypass -File C:\WDAC\Scripts\Morning.ps1"
+$trigger = New-ScheduledTaskTrigger -Daily -At 6:00AM
+$princ   = New-ScheduledTaskPrincipal -UserId "CORP\gmsa-wdac$" -LogonType Password   # gMSA
+Register-ScheduledTask -TaskName "WDAC-Morning-Check" -Action $action -Trigger $trigger -Principal $princ</code></pre></div>
+  <div class="warn"><b>Script rules.</b> If PowerShell script enforcement is on (it should be), your own scripts must be <b>signed</b> or allowed by the policy to run in Full Language mode. Sign them with your code-signing certificate: <code>Set-AuthenticodeSignature -FilePath .\Morning.ps1 -Certificate $cert</code>.</div>
+</section>
+
+<!-- ============ T10 ============ -->
+<section id="t10">
+  <div class="task-head"><span class="num">10</span><h2>Weekly &amp; monthly tasks</h2><span class="pill">Normal</span></div>
+  <div class="tablewrap"><table>
+    <tr><th>Task</th><th>How often</th><th>How to do it (simple)</th></tr>
+    <tr><td>Check event log size</td><td>Weekly</td><td>Make sure the CodeIntegrity log is big enough so events are not lost:<br><code>wevtutil gl Microsoft-Windows-CodeIntegrity/Operational</code> → if <code>maxSize</code> is small, set 100 MB: <code>wevtutil sl Microsoft-Windows-CodeIntegrity/Operational /ms:104857600</code></td></tr>
+    <tr><td>After Patch Tuesday</td><td>Monthly</td><td>Updates can change files. Watch blocks closely for 2–3 days after patching. Hash rules break first – replace them with publisher rules where you can.</td></tr>
+    <tr><td>Update vulnerable driver blocklist</td><td>Monthly</td><td>Compare the date of <code>RecommendedDriverBlock_Enforced.xml</code> with the copy in your repo. If newer, merge, test on pilot, deploy.</td></tr>
+    <tr><td>Update Microsoft recommended block rules</td><td>Monthly</td><td>Download the latest list from Microsoft Learn, compare with your copy, merge changes into the base.</td></tr>
+    <tr><td>Clean up old rules</td><td>Monthly</td><td>Remove rules for apps that are uninstalled and supplemental policies with expired tickets. Fewer rules = easier to manage.</td></tr>
+    <tr><td>Review who can change policies</td><td>Monthly</td><td>Check members of the group that can deploy policies and the code-signing certificate access.</td></tr>
+    <tr><td>Recovery drill</td><td>Quarterly</td><td>On a lab VM: break the policy on purpose, then recover with the steps in WDAC-Policy-Guide.html section 6. Time it.</td></tr>
+    <tr><td>Restore test</td><td>Quarterly</td><td>Restore a backup to a lab server and confirm it loads (event <code>3099</code>).</td></tr>
+  </table></div>
+</section>
+
+<!-- ============ BEST PRACTICES ============ -->
+<section id="bp">
+  <h2>Best practices for managing WDAC</h2>
+  <p class="lead">Short rules that keep production safe and the work simple.</p>
+  <div class="bp">
+    <div class="card"><h4>1. Audit before you enforce</h4><p>Run new policies in audit mode for 2–4 weeks. Enforce only when the audit log is clean.</p></div>
+    <div class="card"><h4>2. One base, many supplementals</h4><p>Keep the base policy small and stable. Put each app or team in its own supplemental policy.</p></div>
+    <div class="card"><h4>3. Prefer publisher rules</h4><p>Use <b>FilePublisher</b> rules. Use hash only for unsigned files. Avoid path rules on folders users can write to.</p></div>
+    <div class="card"><h4>4. Deploy in rings</h4><p>Lab → pilot servers → less critical servers → critical servers. Wait at least 1–2 days between rings.</p></div>
+    <div class="card"><h4>5. Always raise the version</h4><p>Every change gets a higher <code>VersionEx</code> number. Otherwise the update is ignored.</p></div>
+    <div class="card"><h4>6. Keep XML in source control</h4><p>Store all policy XML in Git. Every change has a commit, a ticket number and a reviewer.</p></div>
+    <div class="card"><h4>7. No ticket, no change</h4><p>Every allow rule needs a business owner and an approved request. Put the ticket number in the policy name.</p></div>
+    <div class="card"><h4>8. Back up every night</h4><p>Back up XML, <code>.cip</code> files and the signing certificate (if used). Test restores every quarter.</p></div>
+    <div class="card"><h4>9. Have a rollback plan ready</h4><p>Keep a tested "audit" version of each policy ready to deploy within minutes.</p></div>
+    <div class="card"><h4>10. Block known-bad tools</h4><p>Add Microsoft's vulnerable-driver blocklist and recommended block rules to the base policy.</p></div>
+    <div class="card"><h4>11. Send events to your SIEM</h4><p>Forward events 3076, 3077, 8028, 8029 and 3099 to your SIEM or Microsoft Defender so the SOC can see them.</p></div>
+    <div class="card"><h4>12. Protect from day one</h4><p>Include WDAC in the server build process so new servers are never unprotected.</p></div>
+    <div class="card"><h4>13. Sign policies when mature</h4><p>Signed policies cannot be removed by an admin – stronger, but harder to roll back. Sign only after the policy is stable.</p></div>
+    <div class="card"><h4>14. Limit who can change policies</h4><p>Only a small, named group can deploy policies. Use separate admin accounts for this work.</p></div>
+  </div>
+</section>
+
+<!-- ============ ONE-TIME SETUP ============ -->
+<section id="setup">
+  <h2>One-time setup (do this before day one)</h2>
+  <ol class="steps">
+    <li>Create folders on the management server: <code>C:\WDAC\Repo</code>, <code>Out</code>, <code>Work</code>, <code>Reports</code>, <code>Scripts</code>, <code>Incidents</code>.</li>
+    <li>Create <code>C:\WDAC\servers.txt</code> (production) and <code>C:\WDAC\pilot.txt</code> (pilot servers).</li>
+    <li>Make sure PowerShell Remoting (WinRM) works from the management server to all servers: <code>Test-WSMan SERVER01</code>.</li>
+    <li>Put your current policy XML files into Git: <code>git init C:\WDAC\Repo</code>.</li>
+    <li>Create the baseline file for Task 5.</li>
+    <li>Schedule the nightly backup (<code>WDAC-Backup</code>) and the morning check (<code>WDAC-Morning-Check</code>).</li>
+    <li>Increase the CodeIntegrity event log size on all servers (Task 10).</li>
+    <li>Agree on the allow-request form and approval process with the business.</li>
+    <li>Write down the emergency rollback steps and print them – you may need them when systems are down.</li>
+  </ol>
+  <div class="code"><span class="lbl">PowerShell</span><button type="button">Copy</button><pre><code>"Repo","Out","Out\Approved","Work","Reports","Scripts","Incidents" |
+    ForEach-Object { New-Item -ItemType Directory -Path "C:\WDAC\$_" -Force | Out-Null }
+
+# Test remoting to every server
+Get-Content C:\WDAC\servers.txt | ForEach-Object {
+    [pscustomobject]@{ Server = $_; WinRM = [bool](Test-WSMan $_ -ErrorAction SilentlyContinue) }
+} | Format-Table -AutoSize</code></pre></div>
+</section>
+
+<!-- ============ GLOSSARY ============ -->
+<section id="glossary">
+  <h2>Simple glossary</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Word</th><th>Simple meaning</th></tr>
+    <tr><td>WDAC / App Control for Business</td><td>Windows feature that only lets approved programs run.</td></tr>
+    <tr><td>Policy</td><td>The list of rules: what is allowed and what is blocked.</td></tr>
+    <tr><td>Base policy</td><td>The main policy. Sets the core rules.</td></tr>
+    <tr><td>Supplemental policy</td><td>An add-on policy that allows extra apps for one base policy.</td></tr>
+    <tr><td>Audit mode</td><td>Test mode. Nothing is blocked; Windows only writes down what it <i>would</i> block.</td></tr>
+    <tr><td>Enforced mode</td><td>Real mode. Unapproved programs are blocked.</td></tr>
+    <tr><td><code>.cip</code> file</td><td>The compiled policy that Windows actually reads.</td></tr>
+    <tr><td>XML file</td><td>The readable source of the policy. You edit this, not the <code>.cip</code>.</td></tr>
+    <tr><td>CiTool</td><td>Built-in command to list, add and remove policies (Server 2025, Windows 11).</td></tr>
+    <tr><td>Publisher rule</td><td>Allow by who signed the file (e.g. "Microsoft Corporation").</td></tr>
+    <tr><td>Hash rule</td><td>Allow one exact file. Any change to the file breaks it.</td></tr>
+    <tr><td>Event 3076 / 3077</td><td>3076 = would have blocked (audit). 3077 = blocked (enforced).</td></tr>
+    <tr><td>Event 8028 / 8029</td><td>Same as above, for scripts and MSI installers.</td></tr>
+    <tr><td>Event 3099</td><td>A policy was loaded.</td></tr>
+    <tr><td>Baseline</td><td>The approved list of policy files and their hashes.</td></tr>
+  </table></div>
+</section>
+
+</main>
+</div>
+
+<script>
+document.querySelectorAll('.code button').forEach(function(btn){
+  btn.addEventListener('click', function(){
+    var text = btn.parentElement.querySelector('code').innerText;
+    var done = function(){ btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = 'Copy'; }, 1400); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function(){});
+    } else {
+      var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch(e){} document.body.removeChild(ta);
+    }
+  });
+});
+document.getElementById('themeBtn').addEventListener('click', function(){
+  var root = document.documentElement;
+  var dark = root.getAttribute('data-theme') === 'dark' ||
+             (!root.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  root.setAttribute('data-theme', dark ? 'light' : 'dark');
+});
+var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+var targets = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+function onScroll(){
+  var y = window.scrollY + 80, idx = 0;
+  targets.forEach(function(t,i){ if (t && t.offsetTop <= y) idx = i; });
+  links.forEach(function(a,i){ a.classList.toggle('active', i === idx); });
+}
+window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+</script>
+</body>
+</html>

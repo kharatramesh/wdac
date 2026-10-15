@@ -225,8 +225,7 @@ $p.SiPolicy.Rules.Rule.Option     # all enabled policy options
 $p.SiPolicy.FileRules.ChildNodes | Select Name, ID, FriendlyName, FileName, Hash
 $p.SiPolicy.Signers.Signer | Select ID, Name
 
-# Built-in summary cmdlets (ConfigCI)
-Get-CIPolicyInfo -FilePath C:\WDAC\Base.xml
+# Built-in summary cmdlet (ConfigCI): policy name and ID
 Get-CIPolicyIdInfo -FilePath C:\WDAC\Base.xml</code></pre></div>
 
   <h3 id="s1-types">Base vs. supplemental policies</h3>
@@ -425,8 +424,7 @@ New-CIPolicy -FilePath C:\WDAC\FromAudit.xml -Audit -Level FilePublisher -Fallba
 Merge-CIPolicy -PolicyPaths $xml, C:\WDAC\FromAudit.xml -OutputFilePath $xml
 
 # 4. Bump version (required for a replacement to take effect)
-$v = [version](Get-CIPolicyInfo -FilePath $xml -ErrorAction SilentlyContinue).Version
-if (-not $v) { $v = [version]([xml](Get-Content $xml)).SiPolicy.VersionEx }
+$v = [version]([xml](Get-Content $xml)).SiPolicy.VersionEx
 Set-CIPolicyVersion -FilePath $xml -Version ([version]::new($v.Major,$v.Minor,$v.Build,$v.Revision+1))
 
 # 5. Rename / re-identify

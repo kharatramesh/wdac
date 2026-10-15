@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WDAC GUI Tools</title>
+<style>
+:root{
+  --bg:#f5f7fa; --panel:#ffffff; --text:#1a2029; --muted:#5a6473; --line:#dce2ea;
+  --accent:#0b63ce; --accent-soft:#e7f0fc; --ok:#15784a; --ok-soft:#e2f4ea;
+  --warn:#965a00; --warn-soft:#fff3db; --bad:#b3261e; --bad-soft:#fde7e5;
+  --adv:#6b3fc4; --adv-soft:#efe8fc;
+  --code-bg:#0f1720; --code-text:#d8e2ee; --code-line:#233142;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1218; --panel:#161c25; --text:#e6eaf0; --muted:#9aa5b4; --line:#273140;
+    --accent:#5aa2ff; --accent-soft:#16283f; --ok:#4cc38a; --ok-soft:#12291f;
+    --warn:#f0b24d; --warn-soft:#2e2412; --bad:#ff7b72; --bad-soft:#341b1a;
+    --adv:#b393ff; --adv-soft:#251a3d; --code-bg:#0a0e14; --code-line:#1d2735;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1218; --panel:#161c25; --text:#e6eaf0; --muted:#9aa5b4; --line:#273140;
+  --accent:#5aa2ff; --accent-soft:#16283f; --ok:#4cc38a; --ok-soft:#12291f;
+  --warn:#f0b24d; --warn-soft:#2e2412; --bad:#ff7b72; --bad-soft:#341b1a;
+  --adv:#b393ff; --adv-soft:#251a3d; --code-bg:#0a0e14; --code-line:#1d2735;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.68 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.layout{display:grid;grid-template-columns:260px minmax(0,1fr);min-height:100vh}
+nav{position:sticky;top:0;align-self:start;height:100vh;overflow:auto;padding:22px 14px 40px;border-right:1px solid var(--line);background:var(--panel)}
+nav .brand{font-size:17px;font-weight:700;margin:0 0 2px 8px}
+nav .sub{color:var(--muted);font-size:12.5px;margin:0 0 14px 8px}
+nav a{display:block;padding:5px 10px;margin:1px 0;border-radius:6px;color:var(--text);text-decoration:none;font-size:14px}
+nav a:hover{background:var(--accent-soft)}
+nav a.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+nav .grp{margin:14px 0 4px 10px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.theme{margin:18px 0 0 8px;font-size:12.5px;background:none;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:5px 10px;cursor:pointer}
+main{padding:30px clamp(16px,4vw,52px) 90px;max-width:1040px}
+.hero{border-radius:14px;padding:30px;margin-bottom:28px;background:linear-gradient(135deg,#0a3a74,#0b63ce);color:#fff}
+.hero h1{margin:0 0 6px;font-size:32px;letter-spacing:-.02em;line-height:1.2}
+.hero p{margin:0;opacity:.92;font-size:17px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:24px}
+section>h2{font-size:23px;margin:0 0 6px;letter-spacing:-.01em}
+.goal{color:var(--muted);margin:0 0 14px;font-size:15px}
+h3{font-size:18px;margin:26px 0 8px}
+code{font:13.4px/1.5 ui-monospace,"Cascadia Code",Consolas,monospace;background:var(--accent-soft);padding:1px 5px;border-radius:4px}
+.cb{position:relative;margin:10px 0}
+.cb .cp{position:absolute;top:6px;right:6px;background:var(--code-line);color:#c5d3e3;border:0;border-radius:5px;padding:3px 9px;font-size:12px;cursor:pointer}
+pre{margin:0;background:var(--code-bg);color:var(--code-text);padding:14px 16px;border-radius:8px;overflow:auto;border:1px solid var(--code-line);font:13px/1.55 ui-monospace,"Cascadia Code",Consolas,monospace}
+pre .c{color:#7d8da1}
+.note,.tip,.warn,.danger{border-left:4px solid;border-radius:6px;padding:10px 14px;margin:14px 0;font-size:15px}
+.note{background:var(--accent-soft);border-color:var(--accent)}
+.tip{background:var(--ok-soft);border-color:var(--ok)}
+.warn{background:var(--warn-soft);border-color:var(--warn)}
+.danger{background:var(--bad-soft);border-color:var(--bad)}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;margin:12px 0;font-size:14.5px}
+th,td{text-align:left;padding:8px 11px;border:1px solid var(--line);vertical-align:top}
+th{background:var(--accent-soft);font-size:12.5px;text-transform:uppercase;letter-spacing:.04em}
+.y{color:var(--ok);font-weight:700} .n{color:var(--bad);font-weight:700} .p{color:var(--warn);font-weight:700}
+.steps{counter-reset:s;list-style:none;padding:0}
+.steps>li{counter-increment:s;position:relative;padding:0 0 16px 44px}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700;font-size:14px}
+.keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:12px 0}
+.keys div{border:1px solid var(--line);border-radius:9px;padding:10px 13px;background:var(--bg);font-size:14.5px}
+.keys b{display:block;margin-bottom:2px}
+.winner{border:2px solid var(--ok);background:var(--ok-soft);border-radius:12px;padding:16px 20px;margin:14px 0}
+.winner h3{margin:0 0 6px}
+figure{margin:14px 0;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{color:var(--muted);font-size:13.5px;text-align:center;margin-top:6px}
+.s-box{fill:var(--panel);stroke:var(--line)}
+.s-t{fill:var(--text);font:600 13px system-ui,sans-serif}
+.s-s{fill:var(--muted);font:12px system-ui,sans-serif}
+.s-a{fill:var(--accent-soft);stroke:var(--accent)}
+.s-ok{fill:var(--ok-soft);stroke:var(--ok)}
+.s-warn{fill:var(--warn-soft);stroke:var(--warn)}
+.s-adv{fill:var(--adv-soft);stroke:var(--adv)}
+.s-line{stroke:var(--muted);stroke-width:1.5;fill:none}
+.mock{border:1px solid var(--line);border-radius:10px;background:var(--bg);padding:12px 14px;font-size:14px;margin:10px 0}
+.mock .bar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.mock .bar span{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:3px 10px;font-size:13px}
+.mock .bar span.on{background:var(--accent);border-color:var(--accent);color:#fff}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  nav{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line)}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<nav id="toc">
+  <div class="brand">WDAC GUI Tools</div>
+  <div class="sub">Choosing, installing and using them · Windows Server 2025</div>
+  <a href="#answer">Short answer</a>
+  <a href="#tools">All available GUI tools</a>
+  <a href="#compare">Comparison</a>
+  <a href="#best">Which one is better and why</a>
+  <a href="#arch">Recommended setup</a>
+  <div class="grp">App Control Wizard</div>
+  <a href="#wiz-req">Requirements</a>
+  <a href="#wiz-install">Install</a>
+  <a href="#wiz-tour">Tour of the tool</a>
+  <a href="#wiz-tasks">Six common tasks</a>
+  <a href="#wiz-deploy">Deploy what you built</a>
+  <a href="#wiz-maint">Update &amp; uninstall</a>
+  <div class="grp">Supporting GUI tools</div>
+  <a href="#gpmc">Group Policy Management</a>
+  <a href="#ev">Event Viewer custom view</a>
+  <a href="#mde">Defender portal</a>
+  <a href="#mecm">Configuration Manager</a>
+  <a href="#community">Community tools</a>
+  <div class="grp">Wrap-up</div>
+  <a href="#bp">Best practices</a>
+  <a href="#trouble">Troubleshooting</a>
+  <button class="theme" id="themeBtn" type="button">Toggle theme</button>
+</nav>
+
+<main>
+
+<header class="hero">
+  <h1>GUI Tools for Managing WDAC<br>on Windows Server 2025</h1>
+  <p>Which graphical tools exist, which one to choose, and how to install and use it step by step.</p>
+</header>
+
+<!-- ANSWER -->
+<section id="answer">
+  <h2>Short answer</h2>
+  <div class="winner">
+    <h3>Yes — use the Microsoft <b>App Control Wizard</b> (formerly "WDAC Wizard").</h3>
+    <p style="margin:0">It is free, made by Microsoft, and covers the whole policy job in a GUI: create, edit, merge, turn audit events into rules, and compile to <code>.cip</code>. Install it on a <b>management server with Desktop Experience</b> or a <b>Windows 11 admin workstation</b>, then push the policies it produces to your Server 2025 machines (including Server Core) with CiTool, Group Policy or Configuration Manager.</p>
+  </div>
+  <div class="note"><b>Important:</b> there is no single GUI that both <i>authors</i> and <i>deploys</i> WDAC to Windows Server. You combine a <b>build</b> tool (App Control Wizard) with a <b>deploy</b> tool (GPMC, Configuration Manager or a CiTool script) and a <b>monitor</b> tool (Event Viewer or the Microsoft Defender portal).</div>
+</section>
+
+<!-- TOOLS -->
+<section id="tools">
+  <h2>All available GUI tools</h2>
+  <p class="goal">Grouped by what they do in the policy lifecycle.</p>
+  <div class="tw"><table>
+    <tr><th>Tool</th><th>Made by</th><th>Job</th><th>What it is</th></tr>
+    <tr><td><b>App Control Wizard</b></td><td>Microsoft (open source)</td><td>Build · Edit · Merge</td><td>Desktop app (MSIX) for creating and editing policies, converting events to rules and compiling binaries.</td></tr>
+    <tr><td><b>Group Policy Management Console (GPMC)</b></td><td>Microsoft (built in)</td><td>Deploy</td><td>Deploys <b>one</b> policy (single-policy format) to domain computers.</td></tr>
+    <tr><td><b>Configuration Manager console (MECM)</b></td><td>Microsoft (licensed)</td><td>Build (basic) · Deploy · Managed Installer</td><td>Creates simple App Control policies and deploys them to managed devices.</td></tr>
+    <tr><td><b>Microsoft Intune admin center</b></td><td>Microsoft (licensed)</td><td>Build (basic) · Deploy</td><td>App Control for Business profiles for Intune-enrolled Windows 10/11 clients. Windows Server is generally <b>not</b> Intune-enrolled, so this is mainly a client tool.</td></tr>
+    <tr><td><b>Event Viewer</b></td><td>Microsoft (built in)</td><td>Monitor</td><td>Read audit and block events on a server.</td></tr>
+    <tr><td><b>Microsoft Defender portal</b></td><td>Microsoft (licensed)</td><td>Monitor (fleet)</td><td>Advanced Hunting across all onboarded servers for App Control events.</td></tr>
+    <tr><td><b>AppControl Manager</b></td><td>Community (open source)</td><td>Build · Deploy · Monitor</td><td>Third-party, feature-rich GUI. Not supported by Microsoft. Check its OS support before use.</td></tr>
+  </table></div>
+  <div class="warn"><b>Not suitable:</b> the Local Security Policy / AppLocker GUI manages <b>AppLocker</b>, not WDAC. Windows Admin Center does not author WDAC policies.</div>
+</section>
+
+<!-- COMPARE -->
+<section id="compare">
+  <h2>Comparison</h2>
+  <div class="tw"><table>
+    <tr><th>Feature</th><th>App Control Wizard</th><th>GPMC</th><th>MECM</th><th>Intune</th><th>Community: AppControl Manager</th></tr>
+    <tr><td>Cost</td><td class="y">Free</td><td class="y">Free</td><td class="p">Licensed</td><td class="p">Licensed</td><td class="y">Free</td></tr>
+    <tr><td>Microsoft supported</td><td class="y">Yes</td><td class="y">Yes</td><td class="y">Yes</td><td class="y">Yes</td><td class="n">No</td></tr>
+    <tr><td>Use for Windows Server 2025</td><td class="y">Yes (build)</td><td class="y">Yes (deploy)</td><td class="p">Check support matrix</td><td class="n">Generally no</td><td class="p">Check OS support</td></tr>
+    <tr><td>Create base policies</td><td class="y">Yes</td><td class="n">No</td><td class="p">Basic</td><td class="p">Basic</td><td class="y">Yes</td></tr>
+    <tr><td>Supplemental policies</td><td class="y">Yes</td><td class="n">No</td><td class="p">Limited</td><td class="y">Yes</td><td class="y">Yes</td></tr>
+    <tr><td>All rule types (publisher, hash, path, attributes)</td><td class="y">Yes</td><td class="n">—</td><td class="p">Limited</td><td class="p">Limited</td><td class="y">Yes</td></tr>
+    <tr><td>All rule options</td><td class="y">Yes</td><td class="n">—</td><td class="p">Some</td><td class="p">Some</td><td class="y">Yes</td></tr>
+    <tr><td>Audit events → rules</td><td class="y">Yes</td><td class="n">No</td><td class="n">No</td><td class="n">No</td><td class="y">Yes</td></tr>
+    <tr><td>Merge policies</td><td class="y">Yes</td><td class="n">No</td><td class="n">No</td><td class="n">No</td><td class="y">Yes</td></tr>
+    <tr><td>Deploy to servers</td><td class="n">No</td><td class="y">Yes (1 policy)</td><td class="y">Yes</td><td class="n">—</td><td class="p">Local machine</td></tr>
+    <tr><td>Output works with CiTool / scripts</td><td class="y">Yes (standard XML/.cip)</td><td>—</td><td class="p">Managed by MECM</td><td class="p">Managed by Intune</td><td class="y">Yes</td></tr>
+  </table></div>
+</section>
+
+<!-- BEST -->
+<section id="best">
+  <h2>Which one is better, and why</h2>
+  <p class="goal">For building and maintaining policies for Windows Server 2025: <b>App Control Wizard</b>.</p>
+  <div class="keys">
+    <div><b>1. Official and free</b>Built and maintained by Microsoft, open source on GitHub, no licence needed.</div>
+    <div><b>2. Complete</b>Every rule type and every rule option, base and supplemental policies, multiple-policy format.</div>
+    <div><b>3. Learns from your servers</b>Turns audit events (3076/3077) from a server's log or an exported <code>.evtx</code> into rules.</div>
+    <div><b>4. Standard output</b>Produces normal XML and <code>.cip</code> files, so it fits CiTool, Git, GPO and every script in your other guides.</div>
+    <div><b>5. Safe</b>Runs on your admin machine; nothing is pushed to servers until <i>you</i> deploy it.</div>
+    <div><b>6. Easy to learn</b>Page-by-page wizard with explanations for each option.</div>
+  </div>
+  <h3>When to choose something else</h3>
+  <div class="tw"><table>
+    <tr><th>Situation</th><th>Better choice</th></tr>
+    <tr><td>Domain servers, one simple policy, no extra tooling</td><td>GPMC to deploy (policy still built with the Wizard)</td></tr>
+    <tr><td>Estate already managed with Configuration Manager</td><td>MECM console for deployment and Managed Installer</td></tr>
+    <tr><td>Windows 10/11 clients in Intune</td><td>Intune App Control for Business profiles</td></tr>
+    <tr><td>Fleet-wide visibility of blocks</td><td>Microsoft Defender portal (Advanced Hunting)</td></tr>
+  </table></div>
+</section>
+
+<!-- ARCH -->
+<section id="arch">
+  <h2>Recommended setup</h2>
+  <figure>
+    <svg viewBox="0 0 760 290" role="img" aria-label="Recommended architecture">
+      <rect x="10" y="14" width="230" height="200" rx="12" class="s-a"/>
+      <text x="125" y="40" text-anchor="middle" class="s-t">Management machine</text>
+      <text x="125" y="58" text-anchor="middle" class="s-s">Server 2025 Desktop Exp. or Windows 11</text>
+      <rect x="24" y="72" width="202" height="30" rx="6" class="s-box"/><text x="125" y="92" text-anchor="middle" class="s-t">App Control Wizard</text>
+      <rect x="24" y="110" width="202" height="30" rx="6" class="s-box"/><text x="125" y="130" text-anchor="middle" class="s-t">GPMC</text>
+      <rect x="24" y="148" width="202" height="30" rx="6" class="s-box"/><text x="125" y="168" text-anchor="middle" class="s-t">Git repo: XML + .cip</text>
+      <text x="125" y="200" text-anchor="middle" class="s-s">Build · review · version</text>
+
+      <path class="s-line" d="M240 110 H300"/><text x="270" y="102" text-anchor="middle" class="s-s">.cip</text>
+
+      <rect x="300" y="14" width="200" height="200" rx="12" class="s-warn"/>
+      <text x="400" y="40" text-anchor="middle" class="s-t">Deploy</text>
+      <text x="316" y="72" class="s-s">• CiTool via PS remoting</text>
+      <text x="316" y="96" class="s-s">• Group Policy (single policy)</text>
+      <text x="316" y="120" class="s-s">• Configuration Manager</text>
+      <text x="316" y="150" class="s-s">Rings: lab → pilot →</text>
+      <text x="316" y="168" class="s-s">broad → critical</text>
+
+      <path class="s-line" d="M500 110 H560"/>
+
+      <rect x="560" y="14" width="190" height="200" rx="12" class="s-ok"/>
+      <text x="655" y="40" text-anchor="middle" class="s-t">Server 2025 fleet</text>
+      <text x="576" y="72" class="s-s">• Server Core</text>
+      <text x="576" y="96" class="s-s">• Desktop Experience</text>
+      <text x="576" y="120" class="s-s">No GUI tool needed</text>
+      <text x="576" y="138" class="s-s">on these servers</text>
+
+      <path class="s-line" d="M655 214 V250 H125 V214"/>
+      <rect x="250" y="234" width="290" height="44" rx="10" class="s-adv"/>
+      <text x="395" y="254" text-anchor="middle" class="s-t">Monitor: Event Viewer · Defender portal</text>
+      <text x="395" y="270" text-anchor="middle" class="s-s">audit events feed back into the Wizard</text>
+    </svg>
+    <figcaption>Build on one machine, deploy to many, and feed the events back into the next build.</figcaption>
+  </figure>
+  <div class="tip"><b>Why not install the Wizard on every server?</b> Production servers should run only what they need. One hardened management machine is easier to protect, and Server Core cannot run the Wizard anyway.</div>
+</section>
+
+<!-- WIZARD REQ -->
+<section id="wiz-req">
+  <h2>App Control Wizard — requirements</h2>
+  <div class="tw"><table>
+    <tr><th>Item</th><th>Requirement</th></tr>
+    <tr><td>Where to install</td><td>Windows Server 2025 <b>with Desktop Experience</b>, or Windows 10/11 (Pro, Enterprise or Education)</td></tr>
+    <tr><td>Not supported</td><td>Server Core (no desktop GUI). Windows Home lacks the ConfigCI module the Wizard depends on.</td></tr>
+    <tr><td>Package type</td><td>MSIX, signed by Microsoft</td></tr>
+    <tr><td>Permissions</td><td>Local administrator to install; run elevated to read local event logs</td></tr>
+    <tr><td>Dependencies</td><td>ConfigCI PowerShell module (built into Server 2025 and Windows Pro/Enterprise)</td></tr>
+    <tr><td>Network</td><td>Internet to download once; the app itself works offline</td></tr>
+  </table></div>
+  <div class="warn"><b>If the management machine itself runs an enforced WDAC policy</b>, make sure the policy allows the Wizard (it is a Microsoft-signed packaged app). <code>AllowMicrosoft</code> trusts it; a strict <code>DefaultWindows</code> policy may need a rule for it.</div>
+</section>
+
+<!-- WIZARD INSTALL -->
+<section id="wiz-install">
+  <h2>Install the App Control Wizard</h2>
+  <p class="goal">Two methods: online (with a browser) and offline (copy the file).</p>
+
+  <h3>Method A — online, on the management machine</h3>
+  <ol class="steps">
+    <li><b>Find the official download.</b> Open Microsoft Learn and search for <b>"App Control Wizard"</b>. The page links to the official download site (at the time of writing <code>https://webapp-wdac-wizard.azurewebsites.net</code>). Always start from Microsoft Learn so you get the genuine package.</li>
+    <li><b>Download the MSIX</b> file to <code>C:\Install\</code>.</li>
+    <li><b>Check the signature</b> before installing:
+      <div class="cb"><pre>Get-AuthenticodeSignature C:\Install\*.msix | Select-Object Status, @{n='Signer';e={$_.SignerCertificate.Subject}}</pre></div>
+      Expect <code>Valid</code> and a <code>Microsoft Corporation</code> signer.</li>
+    <li><b>Install it.</b> Double-click the file (App Installer), or use PowerShell — this works even where App Installer is missing, which is common on Server:
+      <div class="cb"><pre>Add-AppxPackage -Path (Get-ChildItem C:\Install\*.msix | Select-Object -First 1).FullName</pre></div></li>
+    <li><b>Confirm the install.</b>
+      <div class="cb"><pre>Get-AppxPackage | Where-Object { $_.Name -match 'WDAC|AppControl' } | Select-Object Name, Version, InstallLocation</pre></div></li>
+    <li><b>Start it</b> from the Start menu (search "App Control"). Right-click → <b>Run as administrator</b> when you need to read local event logs.</li>
+  </ol>
+
+  <h3>Method B — offline / no browser on the server</h3>
+  <ol class="steps">
+    <li>Download and verify the MSIX on an internet-connected admin PC (steps A1–A3).</li>
+    <li>Copy it to the management server:
+      <div class="cb"><pre>$s = New-PSSession -ComputerName MGMT01
+Invoke-Command $s { New-Item -ItemType Directory C:\Install -Force | Out-Null }
+Copy-Item C:\Install\*.msix -Destination C:\Install\ -ToSession $s</pre></div></li>
+    <li>On the management server (interactive session, Desktop Experience):
+      <div class="cb"><pre>Add-AppxPackage -Path (Get-ChildItem C:\Install\*.msix | Select-Object -First 1).FullName</pre></div></li>
+  </ol>
+
+  <h3>Method C — install for all users of the management server</h3>
+  <div class="cb"><pre><span class="c"># Provision the package so every admin who signs in gets it</span>
+Add-AppxProvisionedPackage -Online -PackagePath (Get-ChildItem C:\Install\*.msix | Select-Object -First 1).FullName -SkipLicense</pre></div>
+
+  <h3>First-run settings</h3>
+  <ol class="steps">
+    <li>Open <b>Settings</b> (gear icon) in the Wizard.</li>
+    <li>Set the default <b>output folder</b> to your policy repository, e.g. <code>C:\WDAC\Policies</code>.</li>
+    <li>Turn on <b>convert policy to binary</b> (so a <code>.cip</code> is created with each XML) if the option is shown.</li>
+    <li>Leave the default policy format as <b>multiple policy format</b> for Server 2025.</li>
+  </ol>
+</section>
+
+<!-- TOUR -->
+<section id="wiz-tour">
+  <h2>Tour of the App Control Wizard</h2>
+  <div class="mock">
+    <div class="bar"><span class="on">Policy Creator</span><span>Policy Editor</span><span>Policy Merger</span><span>Settings</span></div>
+    The main screen offers three workflows.
+  </div>
+  <div class="tw"><table>
+    <tr><th>Area</th><th>What you do there</th></tr>
+    <tr><td><b>Policy Creator</b></td><td>Create a new <b>base</b> or <b>supplemental</b> policy. Choose a starting template, rule options and custom rules.</td></tr>
+    <tr><td><b>Policy Editor</b></td><td>Open an existing XML to add/remove rules and change options — or build rules from <b>event logs</b> (local log, <code>.evtx</code> file, or Defender Advanced Hunting export).</td></tr>
+    <tr><td><b>Policy Merger</b></td><td>Combine two or more policies into one.</td></tr>
+  </table></div>
+  <h3>Base templates offered by the Wizard</h3>
+  <div class="tw"><table>
+    <tr><th>Template in the Wizard</th><th>Similar to</th><th>Trusts</th></tr>
+    <tr><td>Default Windows Mode</td><td><code>DefaultWindows_*.xml</code></td><td>Windows components, Store apps, WHQL drivers</td></tr>
+    <tr><td>Allow Microsoft Mode</td><td><code>AllowMicrosoft.xml</code></td><td>All Microsoft-signed software</td></tr>
+    <tr><td>Signed and Reputable Mode</td><td>AllowMicrosoft + ISG</td><td>Microsoft-signed plus files with good cloud reputation (needs internet on the servers)</td></tr>
+  </table></div>
+  <div class="note">Screen names can change between Wizard versions. The concepts stay the same: template → options → rules → output.</div>
+</section>
+
+<!-- TASKS -->
+<section id="wiz-tasks">
+  <h2>Six common tasks in the Wizard</h2>
+
+  <h3>Task 1 — Create a base policy for a server</h3>
+  <ol class="steps">
+    <li>Policy Creator → <b>Multiple Policy Format</b> → <b>Base Policy</b>.</li>
+    <li>Choose <b>Default Windows Mode</b> (or <b>Allow Microsoft Mode</b> for SQL/Exchange servers). Enter a name, e.g. <code>Srv2025-Base</code>, and the save location.</li>
+    <li>On the <b>Policy Rules</b> page turn on: <i>Audit Mode</i>, <i>User Mode Code Integrity</i>, <i>Update Policy without Rebooting</i>, <i>Allow Supplemental Policies</i>. For pilots also <i>Advanced Boot Options Menu</i> and <i>Boot Audit on Failure</i>.</li>
+    <li>Skip custom rules for now → <b>Next</b>. The Wizard writes <code>Srv2025-Base.xml</code> (and the <code>.cip</code> if enabled).</li>
+  </ol>
+
+  <h3>Task 2 — Add a rule for a third-party application</h3>
+  <ol class="steps">
+    <li>Policy Editor → open <code>Srv2025-Base.xml</code> (or create a supplemental, Task 3).</li>
+    <li><b>Add Custom Rule</b> → Rule type <b>Publisher</b> → browse to the app's signed EXE.</li>
+    <li>Use the slider to choose how specific: issuing CA → publisher → product → file name → version. "Publisher + file name + version" equals <code>FilePublisher</code>.</li>
+    <li>For unsigned files choose rule type <b>File Hash</b>; for an admin-only folder choose <b>Path</b>.</li>
+    <li><b>Create Rule</b> → <b>Next</b> to save.</li>
+  </ol>
+
+  <h3>Task 3 — Create a supplemental policy</h3>
+  <ol class="steps">
+    <li>Policy Creator → <b>Supplemental Policy</b>.</li>
+    <li>Browse to the <b>base policy XML</b> it extends (the base must allow supplementals).</li>
+    <li>Name it with the ticket number, e.g. <code>Supp-VendorApp-REQ1234</code>.</li>
+    <li>Add publisher/hash/path rules for the app → <b>Next</b>.</li>
+  </ol>
+
+  <h3>Task 4 — Turn audit events into rules</h3>
+  <ol class="steps">
+    <li>On a pilot server running the base in audit mode, export the log:
+      <div class="cb"><pre>wevtutil epl Microsoft-Windows-CodeIntegrity/Operational C:\Temp\CI-$env:COMPUTERNAME.evtx
+<span class="c"># copy it to the management machine</span></pre></div></li>
+    <li>Wizard → Policy Editor → <b>Parse event log (.evtx) files</b> → select the file(s).</li>
+    <li>Review the list of files found. <b>Untick anything you do not recognise</b>.</li>
+    <li>Choose the rule level for each (prefer Publisher) → save as a new supplemental policy.</li>
+  </ol>
+  <div class="danger">Audit events include <i>everything</i> that ran — possibly malware. Review every entry before creating rules.</div>
+
+  <h3>Task 5 — Change rule options (audit → enforce)</h3>
+  <ol class="steps">
+    <li>Policy Editor → open the base XML.</li>
+    <li>Policy Rules page → turn <b>Audit Mode</b> off. Turn off pilot-only options (9, 10) for production.</li>
+    <li>Save. Then raise the version (the Wizard may do this automatically; check <code>VersionEx</code> in the XML):
+      <div class="cb"><pre>([xml](Get-Content C:\WDAC\Policies\Srv2025-Base.xml)).SiPolicy.VersionEx</pre></div></li>
+  </ol>
+
+  <h3>Task 6 — Merge policies</h3>
+  <ol class="steps">
+    <li>Policy Merger → add the policies, e.g. your base and the driver blocklist <code>C:\Windows\schemas\CodeIntegrity\ExamplePolicies\RecommendedDriverBlock_Enforced.xml</code>.</li>
+    <li>Choose the output path → <b>Merge</b>.</li>
+    <li>Open the result in Policy Editor and confirm the name, ID and options are what you expect.</li>
+  </ol>
+</section>
+
+<!-- DEPLOY -->
+<section id="wiz-deploy">
+  <h2>Deploy what you built</h2>
+  <p class="goal">The Wizard builds files; these methods put them on servers.</p>
+
+  <h3>Option 1 — CiTool over PowerShell remoting (works for Server Core)</h3>
+  <div class="cb"><pre>$xml = "C:\WDAC\Policies\Srv2025-Base.xml"
+$id  = ([xml](Get-Content $xml)).SiPolicy.PolicyID
+ConvertFrom-CIPolicy -XmlFilePath $xml -BinaryFilePath "C:\WDAC\Binary\$id.cip"     <span class="c"># skip if the Wizard already made it</span>
+
+foreach ($srv in Get-Content C:\WDAC\pilot.txt) {
+  $s = New-PSSession -ComputerName $srv
+  Copy-Item "C:\WDAC\Binary\$id.cip" -Destination "C:\Windows\Temp\$id.cip" -ToSession $s
+  Invoke-Command $s { param($id) CiTool.exe --update-policy "C:\Windows\Temp\$id.cip"; CiTool.exe -lp | Select-String $id.Trim('{}') } -ArgumentList $id
+  Remove-PSSession $s
+}</pre></div>
+
+  <h3>Option 2 — Group Policy (one policy only)</h3>
+  <p>See the <a href="#gpmc">GPMC section</a>. Build the policy in the Wizard using <b>Single Policy Format</b> for this method.</p>
+
+  <h3>Option 3 — Configuration Manager</h3>
+  <p>See the <a href="#mecm">MECM section</a>.</p>
+
+  <div class="tip">Store each Wizard output in Git with a commit message that includes the version and ticket. Deploy to a pilot ring first.</div>
+</section>
+
+<!-- MAINT -->
+<section id="wiz-maint">
+  <h2>Update and uninstall the Wizard</h2>
+  <div class="cb"><pre><span class="c"># Which version is installed?</span>
+Get-AppxPackage | Where-Object { $_.Name -match 'WDAC|AppControl' } | Select-Object Name, Version
+
+<span class="c"># Update: download the newer MSIX from the official site, then</span>
+Add-AppxPackage -Path C:\Install\&lt;new-version&gt;.msix
+
+<span class="c"># Uninstall</span>
+Get-AppxPackage | Where-Object { $_.Name -match 'WDAC|AppControl' } | Remove-AppxPackage</pre></div>
+  <p>Check for a new version every quarter; Microsoft adds features and fixes regularly.</p>
+</section>
+
+<!-- GPMC -->
+<section id="gpmc">
+  <h2>Group Policy Management Console (deploy)</h2>
+  <p class="goal">Deploy one policy to domain-joined Server 2025 machines without scripts.</p>
+  <ol class="steps">
+    <li><b>Install GPMC</b> on the management server:
+      <div class="cb"><pre>Install-WindowsFeature GPMC</pre></div></li>
+    <li><b>Build a single-format binary</b> and put it on a share that computer accounts can read:
+      <div class="cb"><pre>ConvertFrom-CIPolicy -XmlFilePath C:\WDAC\Policies\Srv2025-Single.xml -BinaryFilePath \\fs01\WDAC$\SiPolicy.p7b</pre></div></li>
+    <li>Open <b>gpmc.msc</b> → create a GPO (e.g. <code>WDAC - Pilot Servers</code>) linked to the pilot servers OU.</li>
+    <li>Edit → <b>Computer Configuration → Policies → Administrative Templates → System → Device Guard</b> → <b>Deploy App Control for Business</b> (older name: <i>Deploy Windows Defender Application Control</i>).</li>
+    <li>Set <b>Enabled</b> and enter <code>\\fs01\WDAC$\SiPolicy.p7b</code>.</li>
+    <li>On a pilot server: <code>gpupdate /force</code> and restart. Check with <code>CiTool.exe -lp</code>.</li>
+  </ol>
+  <div class="warn"><b>Limits:</b> one policy only, no supplementals, and a reboot is needed. For base + supplemental designs use CiTool or Configuration Manager.</div>
+</section>
+
+<!-- EVENT VIEWER -->
+<section id="ev">
+  <h2>Event Viewer custom view (monitor)</h2>
+  <p class="goal">One click to see all WDAC audits and blocks on a server.</p>
+  <ol class="steps">
+    <li>Save the XML below as <code>C:\WDAC\WDAC-View.xml</code>.</li>
+    <li>Event Viewer → <b>Custom Views</b> → <b>Import Custom View…</b> → select the file.</li>
+    <li>To view another server: Action → <b>Connect to Another Computer…</b></li>
+  </ol>
+  <div class="cb"><pre>&lt;ViewerConfig&gt;
+  &lt;QueryConfig&gt;
+    &lt;QueryParams&gt;&lt;UserQuery /&gt;&lt;/QueryParams&gt;
+    &lt;QueryNode&gt;
+      &lt;Name&gt;WDAC - Audits and Blocks&lt;/Name&gt;
+      &lt;QueryList&gt;
+        &lt;Query Id="0" Path="Microsoft-Windows-CodeIntegrity/Operational"&gt;
+          &lt;Select Path="Microsoft-Windows-CodeIntegrity/Operational"&gt;*[System[(EventID=3076 or EventID=3077 or EventID=3089 or EventID=3099)]]&lt;/Select&gt;
+          &lt;Select Path="Microsoft-Windows-AppLocker/MSI and Script"&gt;*[System[(EventID=8028 or EventID=8029)]]&lt;/Select&gt;
+        &lt;/Query&gt;
+      &lt;/QueryList&gt;
+    &lt;/QueryNode&gt;
+  &lt;/QueryConfig&gt;
+&lt;/ViewerConfig&gt;</pre></div>
+  <div class="tip">On Server Core, use this view from the management server by connecting remotely. The <i>Remote Event Log Management</i> firewall rules must be enabled on the target.</div>
+</section>
+
+<!-- MDE -->
+<section id="mde">
+  <h2>Microsoft Defender portal (fleet monitoring)</h2>
+  <p class="goal">See App Control events from every onboarded server in one place.</p>
+  <p>If your Server 2025 machines are onboarded to Microsoft Defender for Endpoint, open <b>security.microsoft.com → Hunting → Advanced hunting</b> and run:</p>
+  <div class="cb"><pre>DeviceEvents
+| where Timestamp &gt; ago(7d)
+| where ActionType startswith "AppControl"
+| summarize Events = count(), Servers = dcount(DeviceName) by ActionType, FileName, FolderPath
+| order by Events desc</pre></div>
+  <p>Export the results to CSV — the App Control Wizard can turn an Advanced Hunting export into rules (Policy Editor → event log options).</p>
+</section>
+
+<!-- MECM -->
+<section id="mecm">
+  <h2>Configuration Manager console</h2>
+  <p class="goal">For estates already managed by MECM.</p>
+  <ol class="steps">
+    <li>Console → <b>Assets and Compliance → Endpoint Protection → App Control for Business</b> (older name: Windows Defender Application Control).</li>
+    <li><b>Create Application Control Policy</b> → choose <b>Audit Only</b> or <b>Enforcement Enabled</b>.</li>
+    <li>Optionally add trusted folders/files. MECM automatically makes its own client a <b>Managed Installer</b>, so software it deploys is trusted.</li>
+    <li>Deploy to a pilot collection, then wider collections.</li>
+  </ol>
+  <div class="warn">MECM's built-in policies offer fewer options than the Wizard. Check the current Configuration Manager documentation for Windows Server support and supported versions before relying on it for Server 2025.</div>
+</section>
+
+<!-- COMMUNITY -->
+<section id="community">
+  <h2>Community tools</h2>
+  <p><b>AppControl Manager</b> (open source, by an independent developer, available on GitHub and the Microsoft Store) is a modern, feature-rich GUI that can create, deploy, sign and monitor policies on the local machine.</p>
+  <div class="keys">
+    <div><b>Pros</b>Very complete; local deploy and log views in one app; actively developed.</div>
+    <div><b>Cons</b>Not a Microsoft product and not covered by Microsoft support. OS requirements may not include Windows Server — check the project page first.</div>
+    <div><b>Use it for</b>Labs and learning. For production, prefer the Microsoft App Control Wizard unless your security team has approved it.</div>
+  </div>
+</section>
+
+<!-- BP -->
+<section id="bp">
+  <h2>Best practices for GUI-based management</h2>
+  <ul>
+    <li>Install GUI tools on <b>one hardened management machine</b>, not on production servers.</li>
+    <li>Keep every policy the Wizard produces in <b>Git</b>; the GUI does not keep history for you.</li>
+    <li>Name policies with <b>role + purpose + ticket</b> (e.g. <code>Supp-SQL-Backup-REQ221</code>).</li>
+    <li>Check <code>VersionEx</code> after every edit; it must be higher than the deployed version.</li>
+    <li>Always test GUI-built policies in <b>audit</b> on a pilot server before enforcing.</li>
+    <li>Review event-generated rules line by line before saving.</li>
+    <li>Prefer <b>Publisher</b> rules in the Wizard's slider; use Hash only for unsigned files.</li>
+    <li>Use scripts (CiTool) for repeatable deployment; use the GUI for authoring and review.</li>
+    <li>Update the Wizard quarterly from the official Microsoft source only.</li>
+  </ul>
+</section>
+
+<!-- TROUBLE -->
+<section id="trouble">
+  <h2>Troubleshooting</h2>
+  <div class="tw"><table>
+    <tr><th>Problem</th><th>Cause and fix</th></tr>
+    <tr><td><code>Add-AppxPackage</code> fails on Server Core</td><td>Server Core has no desktop GUI for MSIX apps. Install on Desktop Experience or Windows 11 instead.</td></tr>
+    <tr><td>MSIX will not open by double-click</td><td>App Installer is not present. Use <code>Add-AppxPackage</code> from an elevated PowerShell.</td></tr>
+    <tr><td>Wizard is blocked on the management machine</td><td>Its own WDAC policy does not trust the package. Add a publisher rule for the Wizard or use an AllowMicrosoft-based policy there.</td></tr>
+    <tr><td>Wizard shows errors creating policies</td><td>ConfigCI module unavailable (e.g. Windows Home). Use Server 2025 Desktop Experience or Windows Pro/Enterprise.</td></tr>
+    <tr><td>Event log parsing finds nothing</td><td>Run the Wizard as administrator, or export the log to <code>.evtx</code> from the server and parse the file.</td></tr>
+    <tr><td>Deployed policy not listed by CiTool</td><td>File not named <code>{PolicyID}.cip</code>, or built in single-policy format. Rebuild in multiple-policy format.</td></tr>
+    <tr><td>GPO policy not applied</td><td>Computer account cannot read the share, or no reboot yet. Check <code>gpresult /r</code> and share permissions.</td></tr>
+  </table></div>
+  <p style="color:var(--muted);font-size:13.5px">Tool names, menus and download locations change over time. Confirm current details on Microsoft Learn ("App Control Wizard", "Deploy App Control policies") before production use. Companion guides: <i>WDAC-Complete-Learning-Path.html</i> and <i>WDAC-Daily-Operations.html</i>.</p>
+</section>
+
+</main>
+</div>
+<script>
+document.querySelectorAll('.cb').forEach(function(b){
+  var btn = document.createElement('button');
+  btn.className = 'cp'; btn.type = 'button'; btn.textContent = 'Copy';
+  btn.addEventListener('click', function(){
+    var text = b.querySelector('pre').innerText;
+    var done = function(){ btn.textContent = 'Copied'; setTimeout(function(){ btn.textContent = 'Copy'; }, 1300); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function(){ btn.textContent = 'Select + Ctrl+C'; });
+    } else {
+      var ta = document.createElement('textarea'); ta.value = text; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch(e){} document.body.removeChild(ta);
+    }
+  });
+  b.appendChild(btn);
+});
+document.getElementById('themeBtn').addEventListener('click', function(){
+  var root = document.documentElement;
+  var dark = root.getAttribute('data-theme') === 'dark' ||
+             (!root.getAttribute('data-theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  root.setAttribute('data-theme', dark ? 'light' : 'dark');
+});
+var links = Array.prototype.slice.call(document.querySelectorAll('#toc a'));
+var targets = links.map(function(a){ return document.querySelector(a.getAttribute('href')); });
+function onScroll(){
+  var y = window.scrollY + 90, idx = 0;
+  targets.forEach(function(t, i){ if (t && t.getBoundingClientRect().top + window.scrollY <= y) idx = i; });
+  links.forEach(function(a, i){ a.classList.toggle('active', i === idx); });
+}
+window.addEventListener('scroll', onScroll, {passive:true}); onScroll();
+</script>
+</body>
+</html>

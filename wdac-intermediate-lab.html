@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WDAC Intermediate Lab</title>
+<style>
+:root{--bg:#f6f8fb;--card:#fff;--ink:#1c2430;--mute:#5b6675;--line:#dde3ec;--accent:#0b6bcb;--ok:#0a8f5b;--warn:#b45309;--bad:#c2410c;--warnbg:#fff4e0;--tipbg:#e8f6ee;--infobg:#e8f1fc;--badbg:#fdebe4;--code:#0f1b2d;--codeink:#d6e4f7}
+@media (prefers-color-scheme:dark){:root{--bg:#0f1520;--card:#17202e;--ink:#e6ecf5;--mute:#9aa7ba;--line:#2a3547;--accent:#5aa6ff;--ok:#4cd39b;--warn:#f5b45a;--bad:#ff9468;--warnbg:#3a2c14;--tipbg:#12301f;--infobg:#142a47;--badbg:#3b1d12;--code:#0a1019;--codeink:#d6e4f7}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.65 system-ui,Segoe UI,Roboto,sans-serif}
+.wrap{display:flex;max-width:1220px;margin:0 auto}
+nav{position:sticky;top:0;align-self:flex-start;width:270px;height:100vh;overflow:auto;padding:24px 16px;border-right:1px solid var(--line)}
+nav h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute);margin:0 0 10px;border:0;padding:0}
+nav a{display:block;padding:6px 10px;border-radius:6px;color:var(--ink);text-decoration:none;font-size:14px}
+nav a:hover{background:var(--infobg);color:var(--accent)}
+main{flex:1;min-width:0;padding:32px 28px 90px}
+.hero{background:linear-gradient(135deg,#0b3d78,#0b6bcb);color:#fff;border-radius:14px;padding:30px;margin-bottom:26px}
+.hero h1{margin:0 0 8px;font-size:30px}.hero p{margin:0;opacity:.93}
+section{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:24px 26px;margin-bottom:22px}
+h2{margin-top:0;font-size:23px;border-bottom:2px solid var(--accent);padding-bottom:8px}
+h3{margin:24px 0 8px;font-size:18px;color:var(--accent)}
+h4{margin:16px 0 6px;font-size:15px}
+code{background:var(--infobg);padding:1px 6px;border-radius:4px;font:13.5px Consolas,monospace}
+.cb{position:relative;margin:12px 0}
+pre{background:var(--code);color:var(--codeink);padding:14px 16px;border-radius:8px;overflow:auto;font:13.5px/1.55 Consolas,Menlo,monospace;margin:0}
+pre .c{color:#7f93ad}
+.cp{position:absolute;top:6px;right:6px;background:#27374f;color:#d6e4f7;border:0;border-radius:5px;padding:3px 9px;font-size:12px;cursor:pointer}
+.cp:hover{background:var(--accent)}
+.note,.tip,.warn,.danger{padding:12px 16px;border-radius:8px;margin:14px 0;border-left:4px solid}
+.note{background:var(--infobg);border-color:var(--accent)}.tip{background:var(--tipbg);border-color:var(--ok)}.warn{background:var(--warnbg);border-color:var(--warn)}.danger{background:var(--badbg);border-color:var(--bad)}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px}
+th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top}
+th{background:var(--infobg)}
+.tw{overflow-x:auto}
+.steps{counter-reset:s;list-style:none;padding:0}
+.steps>li{counter-increment:s;position:relative;padding:0 0 18px 48px}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:32px;height:32px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:700}
+.exp{border-left:3px solid var(--line);padding:2px 0 2px 14px;margin:8px 0;color:var(--mute);font-size:15px}
+.exp b{color:var(--ink)}
+.tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:99px;background:var(--accent);color:#fff;margin-left:6px;vertical-align:middle}
+.tag.d{background:var(--bad)}.tag.a{background:var(--ok)}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:14px 0}
+.flow span.b{border:2px solid var(--accent);background:var(--infobg);border-radius:8px;padding:6px 12px;font-size:14px}
+.flow span.b.g{border-color:var(--ok);background:var(--tipbg)}
+.flow span.b.r{border-color:var(--bad);background:var(--badbg)}
+.flow i{font-style:normal;color:var(--mute)}
+@media (max-width:900px){nav{display:none}main{padding:16px}.hero{padding:20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav>
+<h2>Contents</h2>
+<a href="#start">0. How to use this lab</a>
+<a href="#setup">1. Lab setup and safety</a>
+<a href="#create">2. Create the policy</a>
+<a href="#allow">3. Allow your own app</a>
+<a href="#enforce">4. Switch to enforce</a>
+<a href="#deny">5. Deny rules, every type</a>
+<a href="#modify">6. Modify and remove rules</a>
+<a href="#rollback">7. Emergency rollback</a>
+<a href="#multi">8. Multiple policies</a>
+<a href="#logs">9. Logs and troubleshooting</a>
+<a href="#clean">10. Cleanup</a>
+<a href="#cheat">11. Cheat sheet</a>
+</nav>
+<main>
+
+<header class="hero">
+<h1>WDAC Intermediate Lab</h1>
+<p>Hands-on, copy-and-run steps on Windows Server 2025 Core: build a policy, add every kind of deny rule, modify rules, and recover from a bad policy. Every step says what the command does and how to check it worked.</p>
+</header>
+
+<section id="start">
+<h2>0. How to use this lab</h2>
+<p>You will build one small policy and keep changing it. Work in order. Each step has <b>Run</b>, <b>What it does</b> and <b>Check</b>.</p>
+<div class="flow">
+<span class="b">1 Setup</span><i>&rarr;</i><span class="b">2 Audit policy</span><i>&rarr;</i><span class="b g">3 Allow own app</span><i>&rarr;</i><span class="b g">4 Enforce</span><i>&rarr;</i><span class="b r">5 Deny rules</span><i>&rarr;</i><span class="b">6 Modify</span><i>&rarr;</i><span class="b r">7 Rollback</span>
+</div>
+<div class="danger"><b>Use a lab VM with a checkpoint.</b> Do not run this on a production server. A wrong enforced policy can block PowerShell, services or even boot.</div>
+<div class="warn"><b>Authoring after enforcement:</b> once a policy is enforced, your admin PowerShell session runs in <b>Constrained Language Mode</b>, and some of the editing commands below (for example <code>Add-Type</code> and .NET method calls) can fail. Do the editing while the policy is in audit mode, or author the XML on a separate admin machine and copy it over. Section 7 shows how to get back to audit when you are stuck.</div>
+
+<div class="note"><b>How this page was checked:</b> the helper functions (<code>Get-WdacId</code>, <code>Show-WdacRules</code>, <code>Remove-WdacRule</code>) were run against a sample policy XML and correctly removed rules, references and empty wrappers. The two unsigned test programs compile with <code>Add-Type</code>. The ConfigCI and CiTool commands need a Server or Enterprise machine and were <b>not</b> executed here, so run the lab on your VM and report any step that behaves differently.</div>
+
+<h3>Prerequisites</h3>
+<ul>
+<li>Windows Server 2025 (Core is fine), elevated PowerShell.</li>
+<li>The <code>ConfigCI</code> module and <code>CiTool.exe</code> (<code>Get-Command -Module ConfigCI</code>, <code>Get-Command CiTool.exe</code>).</li>
+<li>A VM snapshot or checkpoint, and a way to reach the console (Hyper-V console, not only RDP).</li>
+</ul>
+</section>
+
+<section id="setup">
+<h2>1. Lab setup and safety</h2>
+<ol class="steps">
+<li><b>Check the environment first.</b>
+<div class="cb"><pre>[bool](([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole('Administrators'))   <span class="c"># must be True</span>
+$PSVersionTable.PSVersion                                  <span class="c"># Windows PowerShell 5.1 expected</span>
+Get-Module -ListAvailable ConfigCI | Select-Object Name, Version
+Get-Command CiTool.exe | Select-Object Source
+Test-Path C:\Windows\schemas\CodeIntegrity\ExamplePolicies
+CiTool.exe --list-policies</pre></div>
+<div class="exp"><b>Check:</b> admin = <code>True</code>, <code>ConfigCI</code> is listed, <code>CiTool.exe</code> resolves to <code>C:\Windows\System32</code>, and the templates folder exists. If <code>ConfigCI</code> or the templates are missing (for example on Windows 10/11 Home), author the XML on Server or Enterprise/Pro and copy the files over. Nothing in this lab works without these.</div></li>
+
+<li><b>Create folders and variables.</b>
+<div class="cb"><pre>$W = "C:\WDAC"
+New-Item -ItemType Directory -Force $W\Policies, $W\Binary, $W\Backup, C:\Labs | Out-Null
+$X = "$W\Policies\LabPolicy.xml"</pre></div>
+<div class="exp"><b>What it does:</b> <code>Policies</code> holds XML sources, <code>Binary</code> holds compiled <code>.cip</code> files, <code>Backup</code> holds copies, <code>C:\Labs</code> holds test programs. <code>$X</code> is the policy file we edit throughout.</div></li>
+
+<li><b>Load the helper functions.</b> Paste once per session.
+<div class="cb"><pre>function Get-WdacId($Xml){ ([xml](Get-Content $Xml)).SiPolicy.PolicyID }
+
+function Deploy-Wdac($Xml){
+  $id  = Get-WdacId $Xml
+  $cip = "$W\Binary\$id.cip"
+  ConvertFrom-CIPolicy -XmlFilePath $Xml -BinaryFilePath $cip
+  CiTool.exe --update-policy $cip
+}
+
+function Save-WdacVersion($Xml,[string]$Version){
+  Copy-Item $Xml "$W\Backup\$((Get-Item $Xml).BaseName)-$(Get-Date -f yyyyMMdd-HHmmss).xml"
+  Set-CIPolicyVersion -FilePath $Xml -Version $Version
+}
+
+function Show-WdacRules($Xml){
+  $p = [xml](Get-Content $Xml)
+  $p.SelectNodes("//*[local-name()='FileRules']/*") | ForEach-Object {
+    [pscustomobject]@{ Type=$_.LocalName; ID=$_.ID; Name=$_.FriendlyName; FileName=$_.FileName; FilePath=$_.FilePath }
+  }
+}
+
+function Remove-WdacRule($Xml,[string[]]$Id){
+  Copy-Item $Xml "$W\Backup\$((Get-Item $Xml).BaseName)-$(Get-Date -f yyyyMMdd-HHmmss).xml"
+  $p = [xml](Get-Content $Xml)
+  foreach($i in $Id){
+    @($p.SelectNodes("//*[@ID='$i' and (local-name()='Deny' or local-name()='Allow' or local-name()='FileAttrib')]")) |
+      ForEach-Object { [void]$_.ParentNode.RemoveChild($_) }
+    @($p.SelectNodes("//*[local-name()='FileRuleRef' and @RuleID='$i']")) |
+      ForEach-Object { [void]$_.ParentNode.RemoveChild($_) }
+  }
+  foreach($t in 'FileRulesRef','DeniedSigners','AllowedSigners'){       <span class="c"># empty wrappers are invalid XML for WDAC</span>
+    @($p.SelectNodes("//*[local-name()='$t' and not(*)]")) | ForEach-Object { [void]$_.ParentNode.RemoveChild($_) }
+  }
+  $p.Save((Get-Item $Xml).FullName)
+}</pre></div>
+<div class="exp"><b>What they do:</b>
+<ul>
+<li><code>Deploy-Wdac</code>: compile the XML to <code>{PolicyID}.cip</code> and deploy it.</li>
+<li><code>Save-WdacVersion</code>: back up the XML with a time stamp, then bump the policy version.</li>
+<li><code>Show-WdacRules</code>: list every file rule with its ID.</li>
+<li><code>Remove-WdacRule</code>: delete a rule <i>and</i> every reference to it, and clean up wrappers that would otherwise make the XML invalid.</li>
+</ul></div></li>
+
+<li><b>Back up whatever is already active.</b>
+<div class="cb"><pre>Copy-Item C:\Windows\System32\CodeIntegrity\CiPolicies\Active\*.cip $W\Backup -ErrorAction SilentlyContinue
+CiTool.exe --list-policies</pre></div>
+<div class="exp"><b>Check:</b> you know what was active before you started. A clean lab VM usually has only the built-in system policies.</div></li>
+
+<li><b>Take the VM checkpoint now.</b> This is your last-resort rollback.</li>
+</ol>
+</section>
+
+<section id="create">
+<h2>2. Create the policy (audit mode)</h2>
+<p>Goal: a base policy that allows Windows, starts in <b>audit</b> mode, and can accept supplemental policies later.</p>
+<ol class="steps">
+<li><b>Start from the Windows template.</b>
+<div class="cb"><pre>Get-ChildItem C:\Windows\schemas\CodeIntegrity\ExamplePolicies
+Copy-Item C:\Windows\schemas\CodeIntegrity\ExamplePolicies\DefaultWindows_Audit.xml $X</pre></div>
+<div class="exp"><b>What it does:</b> <code>DefaultWindows</code> trusts Windows components and Store apps. Without such a base, nothing on the server would be allowed.</div>
+<div class="tw"><table>
+<tr><th>Template</th><th>Trusts</th></tr>
+<tr><td>DefaultWindows_Audit / _Enforced</td><td>Windows components, Store apps</td></tr>
+<tr><td>AllowMicrosoft</td><td>All Microsoft-signed software</td></tr>
+<tr><td>AllowAll</td><td>Everything (use as a base for deny-only policies)</td></tr>
+<tr><td>DenyAllAudit</td><td>Nothing (audit only, for discovery)</td></tr>
+</table></div></li>
+
+<li><b>Name it and give it a unique ID.</b>
+<div class="cb"><pre>Set-CIPolicyIdInfo -FilePath $X -PolicyName "Lab Policy" -ResetPolicyID</pre></div>
+<div class="exp"><b>What it does:</b> <code>-ResetPolicyID</code> creates a new GUID so you never overwrite another policy.</div></li>
+
+<li><b>Set rule options.</b>
+<div class="cb"><pre>Set-RuleOption -FilePath $X -Option 3     <span class="c"># Audit mode: log, do not block</span>
+Set-RuleOption -FilePath $X -Option 16    <span class="c"># Apply updates without a reboot</span>
+Set-RuleOption -FilePath $X -Option 17    <span class="c"># Allow supplemental policies</span>
+Set-RuleOption -FilePath $X -Option 0     <span class="c"># Also enforce user-mode code (EXE, DLL, scripts)</span></pre></div>
+<div class="exp"><b>Check:</b> <code>([xml](Get-Content $X)).SiPolicy.Rules.Rule.Option</code> lists <code>Enabled:Audit Mode</code>, <code>Enabled:UMCI</code> and the others. Setting an option that is already present is harmless.</div>
+<div class="tw"><table>
+<tr><th>Option</th><th>Name</th><th>Note</th></tr>
+<tr><td>0</td><td>Enabled:UMCI</td><td>Enforce user-mode code, not only drivers.</td></tr>
+<tr><td>3</td><td>Enabled:Audit Mode</td><td>Log instead of block. Base policies only.</td></tr>
+<tr><td>6</td><td>Enabled:Unsigned System Integrity Policy</td><td><b>Keep it.</b> Templates include it. Without it the policy must be signed, and a policy you cannot delete or replace is a lab-ending mistake.</td></tr>
+<tr><td>16</td><td>Enabled:Update Policy No Reboot</td><td>Allows later updates to apply without a reboot.</td></tr>
+<tr><td>17</td><td>Enabled:Allow Supplemental Policies</td><td>Required on a base before a supplemental can attach.</td></tr>
+</table></div></li>
+
+<li><b>Create two test programs <u>before</u> you enforce.</b> These are unsigned, so WDAC has no reason to trust them.
+<div class="cb"><pre>Add-Type -OutputType ConsoleApplication -OutputAssembly C:\Labs\hello.exe  -TypeDefinition 'public class P{public static void Main(){System.Console.WriteLine("hello 1 running");}}'
+Add-Type -OutputType ConsoleApplication -OutputAssembly C:\Labs\hello2.exe -TypeDefinition 'public class P{public static void Main(){System.Console.WriteLine("hello 2 running");}}'
+C:\Labs\hello.exe
+C:\Labs\hello2.exe</pre></div>
+<div class="exp"><b>What it does:</b> compiles two tiny console programs (<code>Add-Type</code> uses the .NET compiler on Windows PowerShell 5.1). If <code>Add-Type</code> is unavailable on your build, copy any unsigned <code>.exe</code> twice to <code>C:\Labs</code>.</div></li>
+
+<li><b>Deploy in audit mode and look at the result.</b>
+<div class="cb"><pre>Deploy-Wdac $X
+CiTool.exe --list-policies
+C:\Labs\hello.exe                       <span class="c"># still runs: audit only logs</span>
+Get-WinEvent -LogName Microsoft-Windows-CodeIntegrity/Operational -MaxEvents 30 |
+  Where-Object Id -eq 3076 | Select-Object -First 3 TimeCreated, Message | Format-List</pre></div>
+<div class="exp"><b>Check:</b> the policy is listed, the program still runs, and event <b>3076</b> ("would have been blocked") names <code>hello.exe</code>.</div></li>
+</ol>
+</section>
+
+<section id="allow">
+<h2>3. Allow your own app</h2>
+<p>Allow <code>hello.exe</code> but not <code>hello2.exe</code>. The file is unsigned, so a <b>hash rule</b> is the right tool.</p>
+<div class="cb"><pre>$r = New-CIPolicyRule -DriverFilePath C:\Labs\hello.exe -Level Hash
+Merge-CIPolicy -PolicyPaths $X -OutputFilePath $X -Rules $r
+Save-WdacVersion $X "1.0.0.1"
+Show-WdacRules $X | Where-Object Name -like "*hello*"
+Deploy-Wdac $X</pre></div>
+<div class="exp"><b>What it does:</b> <code>New-CIPolicyRule</code> makes an in-memory rule from the file's hash. <code>Merge-CIPolicy -Rules</code> writes it into the XML. The version is bumped so the new copy replaces the old one.</div>
+
+<h3>Other ways to allow software</h3>
+<div class="tw"><table>
+<tr><th>When</th><th>Command</th></tr>
+<tr><td>Signed vendor software, survives upgrades</td><td><code>$d = Get-SystemDriver -ScanPath "C:\Program Files\Vendor" -UserPEs<br>$r = New-CIPolicyRule -DriverFiles $d -Level Publisher</code></td></tr>
+<tr><td>Same, but pin file name and minimum version</td><td><code>New-CIPolicyRule -DriverFiles $d -Level FilePublisher</code></td></tr>
+<tr><td>Signed where possible, hash for the rest</td><td><code>New-CIPolicyRule -DriverFiles $d -Level Publisher -Fallback Hash</code></td></tr>
+<tr><td>Admin-only folder</td><td><code>New-CIPolicyRule -FilePathRule "C:\ApprovedTools\*"</code></td></tr>
+<tr><td>Learn from audit events</td><td><code>New-CIPolicy -Audit -FilePath learned.xml -Level FilePublisher -Fallback Hash -UserPEs -MultiplePolicyFormat</code></td></tr>
+</table></div>
+</section>
+
+<section id="enforce">
+<h2>4. Switch to enforce mode</h2>
+<ol class="steps">
+<li><b>Remove audit mode and redeploy.</b>
+<div class="cb"><pre>Set-RuleOption -FilePath $X -Option 3 -Delete
+Save-WdacVersion $X "1.0.0.2"
+Deploy-Wdac $X
+Get-CimInstance Win32_DeviceGuard -Namespace root\Microsoft\Windows\DeviceGuard |
+  Select-Object CodeIntegrityPolicyEnforcementStatus, UsermodeCodeIntegrityPolicyEnforcementStatus</pre></div>
+<div class="exp"><b>Check:</b> user-mode status is <b>2</b> (enforced). 1 means audit, 0 means off.</div></li>
+
+<li><b>Test it.</b>
+<div class="cb"><pre>C:\Labs\hello.exe        <span class="c"># runs: allowed by hash</span>
+C:\Labs\hello2.exe       <span class="c"># blocked: "An Application Control policy has blocked this file"</span>
+whoami                   <span class="c"># runs: Windows component</span>
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational';Id=3077} -MaxEvents 3 | Format-List TimeCreated,Message</pre></div>
+<div class="exp"><b>Check:</b> <code>hello2.exe</code> fails and event <b>3077</b> names it. You now have a working allow-list.</div></li>
+</ol>
+<div class="tip">From here on, make each change in the order <b>edit XML &rarr; bump version &rarr; deploy &rarr; test &rarr; look at events</b>. If your session is now in Constrained Language Mode and an edit command fails, jump to the audit fallback in section 7, edit, then re-enforce.</div>
+</section>
+
+<section id="deny">
+<h2>5. Deny rules, every type</h2>
+<p>A <b>deny rule always wins</b> over an allow rule, in any active policy. Deny rules are built with <code>New-CIPolicyRule ... -Deny</code> and merged with <code>Merge-CIPolicy -Rules</code>.</p>
+
+<h3>Rule type overview</h3>
+<div class="tw"><table>
+<tr><th>#</th><th>Deny by</th><th>Blocks</th><th>Survives rename?</th><th>Survives file update?</th><th>Use for</th></tr>
+<tr><td>1</td><td>File name (Original / Internal / Description / Product)</td><td>Any file with that attribute, any location</td><td>Yes (uses embedded metadata)</td><td>Yes</td><td>Tools you never want, e.g. a script host</td></tr>
+<tr><td>2</td><td>Hash</td><td>One exact file</td><td>Yes</td><td>No, new build = new hash</td><td>A known-bad or specific file</td></tr>
+<tr><td>3</td><td>Publisher</td><td>Everything signed by that publisher</td><td>Yes</td><td>Yes</td><td>Blocking a whole vendor</td></tr>
+<tr><td>4</td><td>FilePublisher</td><td>One file name from one publisher, with version range</td><td>Yes</td><td>Partly (versions)</td><td>One vendor tool, not the rest of the vendor</td></tr>
+<tr><td>5</td><td>CA / Root certificate</td><td>Everything chained to that CA</td><td>Yes</td><td>Yes</td><td>Rarely; very broad</td></tr>
+<tr><td>6</td><td>Path</td><td>Files under a path</td><td>No (moving escapes it)</td><td>Yes</td><td>Quick block of a folder, weakest type</td></tr>
+<tr><td>7</td><td>Packaged app</td><td>An MSIX/Store app family</td><td>Yes</td><td>Yes</td><td>Desktop Experience machines (not Core)</td></tr>
+</table></div>
+
+<div class="danger"><b>Do not deny things you need to recover.</b> Never deny <code>cmd.exe</code>, <code>powershell.exe</code>, <code>CiTool.exe</code>, <code>shutdown.exe</code> or <code>schtasks.exe</code> in the lab. Also never deny the Microsoft publisher or root CA: it blocks Windows itself. Keep a second console open while testing deny rules.</div>
+
+<h3>5.1 Deny by file name (metadata)</h3>
+<p>Test target: <code>ftp.exe</code> (signed by Microsoft, rarely needed). We also make a renamed copy to prove the rule uses internal metadata.</p>
+<div class="cb"><pre>Copy-Item C:\Windows\System32\ftp.exe C:\Labs\renamed.exe
+C:\Labs\renamed.exe -?                    <span class="c"># runs before the rule</span>
+
+$d1 = New-CIPolicyRule -DriverFilePath C:\Windows\System32\ftp.exe -Level FileName -SpecificFileNameLevel OriginalFileName -Deny
+Merge-CIPolicy -PolicyPaths $X -OutputFilePath $X -Rules $d1
+Save-WdacVersion $X "1.0.0.3"
+Deploy-Wdac $X
+
+C:\Labs\renamed.exe -?                    <span class="c"># blocked even though renamed</span>
+ftp.exe -?                                <span class="c"># blocked</span></pre></div>
+<div class="exp"><b>What it does:</b> the rule matches the <i>OriginalFileName</i> stored inside the program, not the name on disk. <code>-SpecificFileNameLevel</code> options: <code>OriginalFileName</code>, <code>InternalName</code>, <code>FileDescription</code>, <code>ProductName</code>, <code>PackageFamilyName</code>, <code>FilePath</code>.</div>
+<div class="cb"><pre><span class="c"># Same idea with other attributes</span>
+New-CIPolicyRule -DriverFilePath C:\Windows\System32\ftp.exe -Level FileName -SpecificFileNameLevel InternalName    -Deny
+New-CIPolicyRule -DriverFilePath C:\Windows\System32\ftp.exe -Level FileName -SpecificFileNameLevel FileDescription -Deny
+New-CIPolicyRule -DriverFilePath C:\Windows\System32\ftp.exe -Level FileName -SpecificFileNameLevel ProductName     -Deny</pre></div>
+<div class="warn">A <code>ProductName</code> rule is broad. Many files share one product name, so you may block more than you intended.</div>
+
+<h3>5.2 Deny by hash</h3>
+<div class="cb"><pre>$d2 = New-CIPolicyRule -DriverFilePath C:\Labs\hello.exe -Level Hash -Deny
+Merge-CIPolicy -PolicyPaths $X -OutputFilePath $X -Rules $d2
+Save-WdacVersion $X "1.0.0.4"
+Deploy-Wdac $X
+C:\Labs\hello.exe                         <span class="c"># now blocked: deny beats the allow rule from section 3</span></pre></div>
+<div class="exp"><b>Check:</b> the same file had an allow-by-hash rule in section 3 and is now blocked. This proves <b>deny wins</b>. Rename or move it, still blocked. Rebuild it, it runs again (new hash).</div>
+
+<h3>5.3 Deny a publisher (signer)</h3>
+<p>Pick a third-party signed file on your server. Replace the path below with your own vendor file.</p>
+<div class="cb"><pre>$f  = "C:\Program Files\Vendor\app.exe"
+Get-AuthenticodeSignature $f | Format-List Status, @{n='Signer';e={$_.SignerCertificate.Subject}}   <span class="c"># confirm who signed it</span>
+
+$d3 = New-CIPolicyRule -DriverFilePath $f -Level Publisher -Deny
+Merge-CIPolicy -PolicyPaths $X -OutputFilePath $X -Rules $d3
+Save-WdacVersion $X "1.0.0.5"
+Deploy-Wdac $X</pre></div>
+<div class="exp"><b>What it does:</b> adds a <code>Signer</code> and a <code>DeniedSigner</code> entry for the issuing CA plus the vendor's subject name. Every file from that publisher is blocked, including future versions.</div>
+
+<h3>5.4 Deny one file from a publisher (FilePublisher)</h3>
+<div class="cb"><pre>$d4 = New-CIPolicyRule -DriverFilePath $f -Level FilePublisher -Deny
+Merge-CIPolicy -PolicyPaths $X -OutputFilePath $X -Rules $d4
+Save-WdacVersion $X "1.0.0.6"
+Deploy-Wdac $X</pre></div>
+<div class="exp"><b>What it does:</b> blocks only that file name from that publisher. Open the XML and check the <code>MinimumFileVersion</code> / <code>MaximumFileVersion</code> on the generated rule to see which versions are covered.</div>
+
+<h3>5.5 Deny a certificate authority (very broad)</h3>
+<div class="cb"><pre>New-CIPolicyRule -DriverFilePath $f -Level PcaCertificate -Deny     <span class="c"># everything issued under that CA</span>
+New-CIPolicyRule -DriverFilePath $f -Level RootCertificate -Deny   <span class="c"># everything under that root</span></pre></div>
+<div class="danger">These can block large parts of the system if the CA also signs Windows or other software you depend on. List the rule first with <code>Show-WdacRules</code>, test in <b>audit mode</b>, and do not use them for Microsoft CAs.</div>
+
+<h3>5.6 Deny a path</h3>
+<div class="cb"><pre>New-Item -ItemType Directory C:\Labs\Blocked -Force | Out-Null
+Copy-Item C:\Windows\System32\whoami.exe C:\Labs\Blocked\whoami-copy.exe
+
+$d6 = New-CIPolicyRule -FilePathRule "C:\Labs\Blocked\*" -Deny
+Merge-CIPolicy -PolicyPaths $X -OutputFilePath $X -Rules $d6
+Save-WdacVersion $X "1.0.0.7"
+Deploy-Wdac $X
+C:\Labs\Blocked\whoami-copy.exe           <span class="c"># blocked by path; whoami in System32 still runs</span></pre></div>
+<div class="warn">Path deny rules depend on the OS build supporting them. Test them in your lab first. They are the weakest type because moving the file to another folder escapes the rule.</div>
+
+<h3>5.7 Deny a packaged (Store/MSIX) app</h3>
+<div class="cb"><pre><span class="c"># Desktop Experience only: Server Core has no Store apps</span>
+$pkg = Get-AppxPackage -Name "*SomeApp*"
+$d7  = New-CIPolicyRule -Package $pkg -Deny
+Merge-CIPolicy -PolicyPaths $X -OutputFilePath $X -Rules $d7</pre></div>
+
+<h3>5.8 Deny several things at once</h3>
+<div class="cb"><pre>$rules = @()
+foreach ($file in "C:\Windows\System32\ftp.exe","C:\Windows\System32\telnet.exe","C:\Windows\System32\mshta.exe") {
+  if (-not (Test-Path $file)) { "skip (not installed): $file"; continue }   <span class="c"># Server Core has fewer inbox tools</span>
+  $rules += New-CIPolicyRule -DriverFilePath $file -Level FileName -SpecificFileNameLevel OriginalFileName -Deny
+}
+Merge-CIPolicy -PolicyPaths $X -OutputFilePath $X -Rules $rules</pre></div>
+
+<h3>5.9 Deny-only policy (alternative design)</h3>
+<p>If you only want a block list on a server that already has its own policy, make a separate base policy from <code>AllowAll</code>. It allows everything except what you deny, and it works alongside other base policies because a file must pass all of them.</p>
+<div class="cb"><pre>$DX = "$W\Policies\DenyList.xml"
+Copy-Item C:\Windows\schemas\CodeIntegrity\ExamplePolicies\AllowAll.xml $DX
+Set-CIPolicyIdInfo $DX -PolicyName "Deny List" -ResetPolicyID
+$r = New-CIPolicyRule -DriverFilePath C:\Windows\System32\ftp.exe -Level FileName -SpecificFileNameLevel OriginalFileName -Deny
+Merge-CIPolicy -PolicyPaths $DX -OutputFilePath $DX -Rules $r
+Set-RuleOption $DX -Option 3       <span class="c"># audit first</span>
+Deploy-Wdac $DX</pre></div>
+
+<h3>Check the result of any deny rule</h3>
+<div class="cb"><pre>Show-WdacRules $X | Where-Object Type -eq 'Deny' | Format-Table -AutoSize
+$p = [xml](Get-Content $X)
+$p.SiPolicy.Signers.Signer | Select-Object ID, Name                                     <span class="c"># all signers</span>
+$p.SiPolicy.SigningScenarios.SigningScenario.ProductSigners.DeniedSigners.DeniedSigner   <span class="c"># denied signers</span></pre></div>
+</section>
+
+<section id="modify">
+<h2>6. Modify and remove rules</h2>
+
+<h3>6.1 See what is in the policy</h3>
+<div class="cb"><pre>Show-WdacRules $X | Format-Table -AutoSize
+(([xml](Get-Content $X)).SiPolicy.Rules.Rule.Option)</pre></div>
+
+<h3>6.2 Remove a deny rule</h3>
+<div class="cb"><pre>Show-WdacRules $X | Where-Object { $_.Type -eq 'Deny' -and $_.Name -like '*hello*' }   <span class="c"># note the IDs</span>
+$ids = Show-WdacRules $X | Where-Object { $_.Type -eq 'Deny' -and $_.Name -like '*hello*' } | ForEach-Object ID
+Remove-WdacRule $X $ids
+Save-WdacVersion $X "1.0.0.8"
+ConvertFrom-CIPolicy $X "$env:TEMP\dryrun.cip"    <span class="c"># dry-run compile outside Binary: errors mean a dangling reference</span>
+Deploy-Wdac $X
+C:\Labs\hello.exe                                  <span class="c"># allowed again (the section 3 allow rule is still there)</span></pre></div>
+<div class="exp"><b>What it does:</b> removes the rule element and every <code>FileRuleRef</code> that points at it. If you only delete the rule and leave the reference behind, compilation fails with an error naming the element.</div>
+<div class="note">A typical error is <i>"The element 'FileRulesRef' ... has incomplete content"</i>. It means a wrapper was left empty. <code>Remove-WdacRule</code> already cleans these up. If you edit by hand, delete the empty <code>FileRulesRef</code> element.</div>
+
+<h3>6.3 Remove a deny rule for a signer</h3>
+<div class="cb"><pre>$p = [xml](Get-Content $X)
+$p.SiPolicy.Signers.Signer | Select-Object ID, Name              <span class="c"># find the signer ID</span>
+$sid = "ID_SIGNER_S_XXXX"
+Copy-Item $X "$W\Backup\before-signer-removal.xml"
+@($p.SelectNodes("//*[local-name()='DeniedSigner' and @SignerId='$sid']")) | ForEach-Object { [void]$_.ParentNode.RemoveChild($_) }
+@($p.SelectNodes("//*[local-name()='DeniedSigners' and not(*)]"))         | ForEach-Object { [void]$_.ParentNode.RemoveChild($_) }
+if (-not $p.SelectNodes("//*[@SignerId='$sid']").Count) {
+  @($p.SelectNodes("//*[local-name()='Signer' and @ID='$sid']")) | ForEach-Object { [void]$_.ParentNode.RemoveChild($_) }
+}
+$p.Save((Get-Item $X).FullName)
+Save-WdacVersion $X "1.0.0.9"; Deploy-Wdac $X</pre></div>
+
+<h3>6.4 Change a rule's behaviour</h3>
+<div class="tw"><table>
+<tr><th>I want to...</th><th>Do this</th></tr>
+<tr><td>Make the whole policy log-only</td><td><code>Set-RuleOption $X -Option 3</code></td></tr>
+<tr><td>Make it enforcing again</td><td><code>Set-RuleOption $X -Option 3 -Delete</code></td></tr>
+<tr><td>Replace a hash rule after an app update</td><td>Remove the old rule (6.2), then <code>New-CIPolicyRule ... -Level Hash</code> and merge</td></tr>
+<tr><td>Change allow-by-hash into allow-by-publisher</td><td>Remove the hash rules, then add a <code>-Level Publisher</code> rule</td></tr>
+<tr><td>Make an exception to a deny</td><td>An allow can never override a deny. Either remove the deny, or replace it with a narrower one (for example <code>FilePublisher</code> instead of <code>Publisher</code>).</td></tr>
+<tr><td>Combine two policies</td><td><code>Merge-CIPolicy -PolicyPaths a.xml,b.xml -OutputFilePath merged.xml</code></td></tr>
+<tr><td>Add rules found in audit</td><td><code>New-CIPolicy -Audit ...</code> then <code>Merge-CIPolicy</code></td></tr>
+</table></div>
+
+<h3>6.5 Update workflow every time</h3>
+<div class="flow">
+<span class="b">Back up XML</span><i>&rarr;</i><span class="b">Edit</span><i>&rarr;</i><span class="b">Bump version</span><i>&rarr;</i><span class="b">Dry-run compile</span><i>&rarr;</i><span class="b g">Deploy</span><i>&rarr;</i><span class="b g">Test</span><i>&rarr;</i><span class="b">Read events</span>
+</div>
+<div class="cb"><pre>Save-WdacVersion $X "1.0.1.0"           <span class="c"># backup + version bump</span>
+Deploy-Wdac $X                           <span class="c"># same GUID: replaces the running policy</span>
+CiTool.exe --list-policies               <span class="c"># shows the new version number</span></pre></div>
+
+<h3>6.6 Compare two versions</h3>
+<div class="cb"><pre>Get-ChildItem $W\Backup\*.xml | Sort-Object LastWriteTime | Select-Object Name, LastWriteTime
+Compare-Object (Get-Content $W\Backup\LabPolicy-XXXX.xml) (Get-Content $X) | Select-Object -First 20</pre></div>
+</section>
+
+<section id="rollback">
+<h2>7. Emergency rollback</h2>
+<p>Pick the lightest fix that works. Try them in this order.</p>
+
+<div class="tw"><table>
+<tr><th>Situation</th><th>Action</th></tr>
+<tr><td>An app is blocked and you can still run commands</td><td>A or B</td></tr>
+<tr><td>You can only run <code>cmd</code> and <code>CiTool.exe</code> (PowerShell is blocked)</td><td>B (remove) from <code>cmd</code></td></tr>
+<tr><td>You have an older working policy file</td><td>C (restore)</td></tr>
+<tr><td>You cannot sign in or the server will not start normally</td><td>D (offline delete) or the VM checkpoint</td></tr>
+<tr><td>You are about to try something risky</td><td>E first (automatic rollback)</td></tr>
+</table></div>
+
+<h3>A. Flip to audit mode (best first step)</h3>
+<div class="cb"><pre>Set-RuleOption $X -Option 3
+Save-WdacVersion $X "1.0.2.0"
+Deploy-Wdac $X
+C:\Labs\hello2.exe                        <span class="c"># runs again; event 3076 instead of 3077</span></pre></div>
+<div class="exp"><b>Why it works:</b> same policy and same GUID, only the mode changes. Nothing is blocked but everything is still logged, so you can see what to fix.</div>
+
+<h3>B. Remove the policy</h3>
+<div class="cb"><pre>CiTool.exe --list-policies                      <span class="c"># find the PolicyID</span>
+$id = Get-WdacId $X
+CiTool.exe --remove-policy $id
+<span class="c"># from cmd.exe if PowerShell is blocked:</span>
+<span class="c"># CiTool.exe --remove-policy {GUID}</span>
+Restart-Computer                                 <span class="c"># if the policy is still listed afterwards</span></pre></div>
+
+<h3>C. Restore a known-good copy</h3>
+<div class="cb"><pre>Get-ChildItem $W\Backup | Sort-Object LastWriteTime -Descending | Select-Object -First 5 Name
+Copy-Item $W\Backup\LabPolicy-XXXX.xml $X -Force      <span class="c"># pick a good version</span>
+Set-CIPolicyVersion -FilePath $X -Version "1.0.3.0"   <span class="c"># bump above the broken one</span>
+Deploy-Wdac $X</pre></div>
+<div class="note">Always bump the version when you redeploy an older XML. A same-or-lower version can be confusing to track and can be refused for signed policies.</div>
+
+<h3>D. Offline delete (locked out)</h3>
+<ol>
+<li>Restore the VM checkpoint if you have one. This is the fastest.</li>
+<li>Or boot to the Windows Recovery Environment / Server install media &rarr; Repair &rarr; Command Prompt.</li>
+<li>Find the Windows drive letter (it is often not <code>C:</code> in WinRE) and delete the bad policy file:
+<div class="cb"><pre>dir D:\Windows\System32\CodeIntegrity\CiPolicies\Active
+del D:\Windows\System32\CodeIntegrity\CiPolicies\Active\{GUID}.cip</pre></div></li>
+<li>Multiple-policy files can also be copied to the EFI system partition. If the policy still loads after a reboot, delete that copy too:
+<div class="cb"><pre>mountvol S: /S
+dir S:\EFI\Microsoft\Boot\CiPolicies\Active
+del S:\EFI\Microsoft\Boot\CiPolicies\Active\{GUID}.cip
+mountvol S: /D</pre></div></li>
+<li>Reboot normally.</li>
+</ol>
+<div class="warn">This works for <b>unsigned</b> policies, which is all this lab uses. A signed policy cannot be removed this way. That is why signing is an advanced topic and should not be used while learning.</div>
+
+<h3>E. Dead-man switch: automatic rollback</h3>
+<p>Before any risky change, schedule a rollback that fires unless you cancel it.</p>
+<div class="cb"><pre>$id = Get-WdacId $X
+$a  = New-ScheduledTaskAction -Execute "C:\Windows\System32\CiTool.exe" -Argument "--remove-policy $id"
+$t  = New-ScheduledTaskTrigger -Once -At (Get-Date).AddMinutes(20)
+Register-ScheduledTask -TaskName "WDAC-Rollback" -Action $a -Trigger $t -User SYSTEM -RunLevel Highest | Out-Null
+
+<span class="c"># ...apply and test your risky change...</span>
+
+<span class="c"># Happy? Cancel the rollback:</span>
+Unregister-ScheduledTask -TaskName "WDAC-Rollback" -Confirm:$false</pre></div>
+<div class="exp"><b>What it does:</b> in 20 minutes the SYSTEM account runs <code>CiTool --remove-policy</code>, even if your session is blocked or disconnected. To roll back to <i>audit</i> instead of removing, compile an audit copy of the policy first and schedule <code>CiTool.exe --update-policy</code> with that file.</div>
+
+<h3>Rollback drill (do this once)</h3>
+<ol>
+<li>Deny <code>hello.exe</code> by hash (5.2) and confirm it is blocked.</li>
+<li>Run action A and confirm it runs.</li>
+<li>Set enforce again, then run action B and confirm <code>CiTool --list-policies</code> no longer lists your policy.</li>
+<li>Redeploy with action C from a backup.</li>
+<li>Set up action E, wait for it to fire once, then cancel it next time.</li>
+</ol>
+
+<h3>Safe-change checklist</h3>
+<ul>
+<li>Checkpoint or backup taken.</li>
+<li>Change tested in audit mode first.</li>
+<li>Second console session open.</li>
+<li>Dead-man switch scheduled.</li>
+<li>Not denying <code>cmd</code>, <code>powershell</code>, <code>CiTool</code>.</li>
+<li>Version bumped, XML backed up.</li>
+</ul>
+</section>
+
+<section id="multi">
+<h2>8. Multiple policies and supplementals</h2>
+<div class="tw"><table>
+<tr><th>Setup</th><th>Effective result</th></tr>
+<tr><td>One base policy</td><td>That policy decides.</td></tr>
+<tr><td>Base + supplemental (needs option 17 on the base)</td><td>Files allowed by base <b>or</b> supplemental, minus any deny.</td></tr>
+<tr><td>Two base policies</td><td>A file must be allowed by <b>both</b>. Either one can block it.</td></tr>
+</table></div>
+
+<h3>Add a supplemental policy for another app</h3>
+<div class="cb"><pre>$S = "$W\Policies\Supp-Vendor.xml"
+$base = $X
+New-CIPolicy -FilePath $S -ScanPath "C:\Program Files\Vendor" -Level Publisher -Fallback Hash -UserPEs -MultiplePolicyFormat
+Set-CIPolicyIdInfo $S -BasePolicyToSupplementPath $base -PolicyName "Supp Vendor" -ResetPolicyID
+Deploy-Wdac $S
+CiTool.exe --list-policies</pre></div>
+<div class="exp"><b>Check:</b> one base and one supplemental are listed. Deny rules in the base still apply to the supplemental's files.</div>
+<div class="note">A supplemental policy has no mode of its own. It follows its base, so test in audit by putting the <b>base</b> in audit (<code>Set-RuleOption $X -Option 3</code>). Do not set option 3 on the supplemental, and keep deny rules in the base policy.</div>
+
+<h3>Remove them in the right order</h3>
+<div class="cb"><pre>CiTool.exe --remove-policy (Get-WdacId $S)     <span class="c"># supplemental first</span>
+CiTool.exe --remove-policy (Get-WdacId $X)     <span class="c"># then the base</span></pre></div>
+</section>
+
+<section id="logs">
+<h2>9. Logs and troubleshooting</h2>
+<h3>Event IDs</h3>
+<div class="tw"><table>
+<tr><th>ID</th><th>Meaning</th></tr>
+<tr><td>3099</td><td>A policy was loaded</td></tr>
+<tr><td>3076</td><td>Would have been blocked (audit)</td></tr>
+<tr><td>3077</td><td>Blocked (enforced)</td></tr>
+<tr><td>3089</td><td>Signature details for the file in a nearby 3076/3077 event</td></tr>
+<tr><td>3033 / 3034</td><td>A DLL failed signing-level requirements (enforced / audit)</td></tr>
+</table></div>
+
+<h3>Useful queries</h3>
+<div class="cb"><pre><span class="c"># Last blocks with readable text</span>
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational';Id=3076,3077} -MaxEvents 10 |
+  ForEach-Object { "{0}  {1}  {2}" -f $_.TimeCreated, $_.Id, ($_.Message -split "`n")[0] }
+
+<span class="c"># Which signer did WDAC see? (3089 next to a block)</span>
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational';Id=3089} -MaxEvents 5 | Format-List TimeCreated,Message
+
+<span class="c"># Events per ID in the last hour</span>
+Get-WinEvent -FilterHashtable @{LogName='Microsoft-Windows-CodeIntegrity/Operational';StartTime=(Get-Date).AddHours(-1)} |
+  Group-Object Id | Select-Object Count, Name</pre></div>
+
+<h3>Common problems</h3>
+<div class="tw"><table>
+<tr><th>Symptom</th><th>Cause and fix</th></tr>
+<tr><td>Compile fails: "FileRulesRef has incomplete content"</td><td>A rule was removed but its wrapper was left empty. Delete the empty wrapper (see 6.2).</td></tr>
+<tr><td>Compile fails: unknown rule reference</td><td>A <code>FileRuleRef</code> points at a deleted rule. Delete the reference too.</td></tr>
+<tr><td>Policy not listed after deploy</td><td>File not named <code>{PolicyID}.cip</code> or not built in multiple-policy format. Use <code>Deploy-Wdac</code>.</td></tr>
+<tr><td>App still blocked after removing a deny</td><td>Another active policy also blocks it, or the allow rule is missing. Run <code>CiTool --list-policies</code>.</td></tr>
+<tr><td>Unsigned in-house app blocked after rebuild</td><td>Hash changed. Re-add the hash rule or sign the app.</td></tr>
+<tr><td>Path rule ignored</td><td>Folder is writable by standard users, or the build does not support that path rule. Use signer or hash rules.</td></tr>
+<tr><td>Script fails with "language mode"</td><td>Constrained Language Mode is applied to untrusted scripts. Allow the script's hash or sign it.</td></tr>
+<tr><td>Everything blocked</td><td>Base template missing or policy replaced by an empty one. Roll back with section 7.</td></tr>
+</table></div>
+</section>
+
+<section id="clean">
+<h2>10. Cleanup</h2>
+<div class="cb"><pre>Get-ScheduledTask -TaskName WDAC-Rollback -ErrorAction SilentlyContinue | Unregister-ScheduledTask -Confirm:$false
+Get-ChildItem $W\Binary\{*}.cip | ForEach-Object { CiTool.exe --remove-policy $_.BaseName }   <span class="c"># file names are the policy GUIDs</span>
+CiTool.exe --list-policies
+Remove-Item C:\Labs -Recurse -Force
+Restart-Computer</pre></div>
+<div class="exp"><b>Check:</b> your lab policies are gone from <code>--list-policies</code> after the reboot. Keep <code>C:\WDAC\Policies</code> and <code>Backup</code> for reference.</div>
+</section>
+
+<section id="cheat">
+<h2>11. Cheat sheet</h2>
+<div class="tw"><table>
+<tr><th>Task</th><th>Command</th></tr>
+<tr><td>Create from template</td><td><code>Copy-Item ...\ExamplePolicies\DefaultWindows_Audit.xml x.xml</code></td></tr>
+<tr><td>New ID and name</td><td><code>Set-CIPolicyIdInfo x.xml -PolicyName "N" -ResetPolicyID</code></td></tr>
+<tr><td>Audit on / off</td><td><code>Set-RuleOption x.xml -Option 3 [-Delete]</code></td></tr>
+<tr><td>Allow supplementals</td><td><code>Set-RuleOption x.xml -Option 17</code></td></tr>
+<tr><td>Allow by hash</td><td><code>New-CIPolicyRule -DriverFilePath f -Level Hash</code></td></tr>
+<tr><td>Allow by publisher</td><td><code>New-CIPolicyRule -DriverFiles $d -Level Publisher [-Fallback Hash]</code></td></tr>
+<tr><td>Deny by name</td><td><code>... -Level FileName -SpecificFileNameLevel OriginalFileName -Deny</code></td></tr>
+<tr><td>Deny by hash</td><td><code>... -Level Hash -Deny</code></td></tr>
+<tr><td>Deny publisher</td><td><code>... -Level Publisher -Deny</code></td></tr>
+<tr><td>Deny file from publisher</td><td><code>... -Level FilePublisher -Deny</code></td></tr>
+<tr><td>Deny path</td><td><code>New-CIPolicyRule -FilePathRule "C:\x\*" -Deny</code></td></tr>
+<tr><td>Add rules to policy</td><td><code>Merge-CIPolicy -PolicyPaths x.xml -OutputFilePath x.xml -Rules $r</code></td></tr>
+<tr><td>Bump version</td><td><code>Set-CIPolicyVersion -FilePath x.xml -Version "1.0.0.N"</code></td></tr>
+<tr><td>Compile</td><td><code>ConvertFrom-CIPolicy x.xml {GUID}.cip</code></td></tr>
+<tr><td>Deploy</td><td><code>CiTool.exe --update-policy {GUID}.cip</code></td></tr>
+<tr><td>List</td><td><code>CiTool.exe --list-policies</code></td></tr>
+<tr><td>Remove</td><td><code>CiTool.exe --remove-policy {GUID}</code></td></tr>
+<tr><td>Refresh</td><td><code>CiTool.exe --refresh</code></td></tr>
+<tr><td>Events</td><td><code>Get-WinEvent -LogName Microsoft-Windows-CodeIntegrity/Operational</code></td></tr>
+</table></div>
+<p style="color:var(--mute);font-size:13px">Commands were written for Windows Server 2025 and the ConfigCI module. Parameter behaviour can differ between builds, so verify each step in a lab VM before using it on a real server.</p>
+</section>
+
+</main>
+</div>
+<script>
+document.querySelectorAll('.cb').forEach(function(b){
+  var btn=document.createElement('button');btn.className='cp';btn.textContent='Copy';
+  btn.onclick=function(){
+    var t=b.querySelector('pre').innerText;
+    (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(function(){btn.textContent='Copied';setTimeout(function(){btn.textContent='Copy'},1200)}).catch(function(){btn.textContent='Select + Ctrl+C';setTimeout(function(){btn.textContent='Copy'},1500)});
+  };
+  b.appendChild(btn);
+});
+</script>
+</body>
+</html>
