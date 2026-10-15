@@ -1,0 +1,867 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WDAC Server 2025 Guide</title>
+<style>
+:root{
+  --bg:#f7f8fa; --panel:#ffffff; --ink:#1b1f24; --muted:#5b6470; --line:#dfe3e8;
+  --accent:#0f6cbd; --accent-soft:#e6f0fa; --code-bg:#0f1720; --code-ink:#e6edf3;
+  --ok:#1a7f37; --ok-soft:#e7f5ec; --warn:#9a6700; --warn-soft:#fff6db;
+  --bad:#c62828; --bad-soft:#fdecec; --cm:#8b98a5;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0e1116; --panel:#161b22; --ink:#e6edf3; --muted:#9aa5b1; --line:#2b333d;
+    --accent:#4ea1ff; --accent-soft:#12263d; --code-bg:#0a0d12; --code-ink:#e6edf3;
+    --ok:#3fb950; --ok-soft:#10261a; --warn:#d29922; --warn-soft:#2b220c;
+    --bad:#f85149; --bad-soft:#2d1214;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0e1116; --panel:#161b22; --ink:#e6edf3; --muted:#9aa5b1; --line:#2b333d;
+  --accent:#4ea1ff; --accent-soft:#12263d; --code-bg:#0a0d12; --code-ink:#e6edf3;
+  --ok:#3fb950; --ok-soft:#10261a; --warn:#d29922; --warn-soft:#2b220c;
+  --bad:#f85149; --bad-soft:#2d1214;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 "Segoe UI",system-ui,-apple-system,Roboto,Arial,sans-serif}
+header{background:var(--panel);border-bottom:1px solid var(--line);padding:24px 16px}
+header .wrap{max-width:1200px;margin:0 auto}
+header h1{margin:0 0 6px;font-size:26px}
+header p{margin:0;color:var(--muted)}
+.badge{display:inline-block;background:var(--accent);color:#fff;border-radius:999px;font-size:12px;padding:2px 10px;margin-bottom:8px}
+.layout{max-width:1200px;margin:0 auto;display:grid;grid-template-columns:260px 1fr;gap:28px;padding:24px 16px}
+nav.toc{position:sticky;top:12px;align-self:start;max-height:calc(100vh - 24px);overflow:auto;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px}
+nav.toc b{display:block;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:10px 0 4px}
+nav.toc a{display:block;color:var(--ink);text-decoration:none;padding:3px 6px;border-radius:6px;font-size:14px}
+nav.toc a:hover{background:var(--accent-soft);color:var(--accent)}
+main{min-width:0}
+section{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:22px 24px;margin-bottom:22px}
+h2{margin:0 0 4px;font-size:22px}
+h2 .ph{display:inline-block;background:var(--accent);color:#fff;font-size:12px;padding:2px 8px;border-radius:999px;vertical-align:middle;margin-right:8px}
+h3{margin:22px 0 8px;font-size:17px}
+.lead{color:var(--muted);margin-top:0}
+code{font-family:Consolas,"Cascadia Mono",monospace;font-size:13px;background:var(--accent-soft);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
+pre{position:relative;background:var(--code-bg);color:var(--code-ink);padding:14px 16px;border-radius:8px;overflow:auto;font:13px/1.5 Consolas,"Cascadia Mono",monospace;margin:10px 0 14px}
+pre code{background:none;padding:0;color:inherit;font-size:inherit;overflow-wrap:normal}
+pre .c{color:var(--cm)}
+.copy{position:absolute;top:8px;right:8px;background:#ffffff1a;color:#e6edf3;border:1px solid #ffffff33;border-radius:6px;font-size:12px;padding:3px 9px;cursor:pointer}
+.copy:hover{background:#ffffff33}
+table{width:100%;border-collapse:collapse;margin:10px 0 14px;font-size:14px}
+th,td{border:1px solid var(--line);padding:7px 9px;text-align:left;vertical-align:top}
+th{background:var(--accent-soft)}
+.tablewrap{overflow-x:auto}
+.note,.warn,.bad,.ok{border-left:4px solid;border-radius:6px;padding:10px 14px;margin:12px 0}
+.note{border-color:var(--accent);background:var(--accent-soft)}
+.warn{border-color:var(--warn);background:var(--warn-soft)}
+.bad{border-color:var(--bad);background:var(--bad-soft)}
+.ok{border-color:var(--ok);background:var(--ok-soft)}
+ol.steps{counter-reset:s;list-style:none;padding-left:0}
+ol.steps>li{counter-increment:s;position:relative;padding-left:40px;margin:14px 0}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:0;width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;display:grid;place-items:center;font-weight:600;font-size:13px}
+.flow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+.flow span{background:var(--accent-soft);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px}
+.flow i{color:var(--muted);font-style:normal}
+.vars{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin:10px 0}
+.vars div{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px}
+.vars div b{display:block;color:var(--muted);font-weight:600;font-size:12px}
+.tracks{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0}
+.tracks div{border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.tracks h4{margin:0 0 6px}
+.check li{margin:4px 0}
+.themebtn{float:right;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:4px 10px;cursor:pointer;font-size:13px}
+footer{max-width:1200px;margin:0 auto;padding:0 16px 30px;color:var(--muted);font-size:13px}
+footer a{color:var(--accent)}
+@media (max-width:900px){
+  .layout{grid-template-columns:1fr}
+  nav.toc{position:static;max-height:none}
+  section{padding:18px 16px}
+  .tracks{grid-template-columns:1fr}
+}
+@media print{nav.toc,.copy,.themebtn{display:none}.layout{grid-template-columns:1fr}pre{white-space:pre-wrap}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <button class="themebtn" id="themeBtn" type="button">Toggle theme</button>
+  <span class="badge">Windows Server 2025 · build 26100</span>
+  <h1>WDAC / App Control for Business on Windows Server 2025</h1>
+  <p>A step-by-step lab guide covering study, design, implementation and operations. It uses real paths, cmdlets, OSConfig scenarios, CiTool commands, option numbers and event IDs.</p>
+</div></header>
+
+<div class="layout">
+<nav class="toc">
+  <b>Study</b>
+  <a href="#p0">0. Lab values</a>
+  <a href="#p1">1. What's different on Server 2025</a>
+  <a href="#p2">2. Core concepts</a>
+  <a href="#p3">3. Rule levels and options</a>
+  <b>Design</b>
+  <a href="#p4">4. Prepare the server</a>
+  <a href="#p5">5. Choose a track and design</a>
+  <b>Track A: OSConfig</b>
+  <a href="#a1">A1. Default policies (audit)</a>
+  <a href="#a2">A2. Supplemental from events</a>
+  <a href="#a3">A3. Enforce, query, remove</a>
+  <b>Track B: Custom + CiTool</b>
+  <a href="#b1">B1. Base policy</a>
+  <a href="#b2">B2. Supplemental policy</a>
+  <a href="#b3">B3. Deny policy</a>
+  <a href="#b4">B4. Convert and deploy</a>
+  <b>Operate</b>
+  <a href="#o1">6. Monitor events</a>
+  <a href="#o2">7. Audit to enforce</a>
+  <a href="#o3">8. Update policies</a>
+  <a href="#o4">9. Signed policies</a>
+  <a href="#o5">10. Remove / disable</a>
+  <a href="#o6">11. Boot failure recovery</a>
+  <b>Reference</b>
+  <a href="#r1">CiTool reference</a>
+  <a href="#r2">Event ID reference</a>
+  <a href="#r3">Older servers</a>
+  <a href="#r4">Checklists</a>
+</nav>
+
+<main>
+
+<!-- ============ 0 ============ -->
+<section id="p0">
+<h2><span class="ph">Start</span>Lab values used in this guide</h2>
+<p class="lead">Commands below use these values. Custom PolicyIds are generated by <code>-ResetPolicyID</code>, so read yours from the XML and substitute them. Values marked <b>real</b> come from Microsoft documentation.</p>
+<div class="vars">
+  <div><b>Server</b><code>SRV-APP01.contoso.local</code>: Windows Server 2025 Datacenter, Desktop Experience (notes for Core included)</div>
+  <div><b>Admin workstation</b><code>WKS-ADM01</code>: Windows 11, runs the App Control Wizard</div>
+  <div><b>Working folder</b><code>C:\WDAC</code></div>
+  <div><b>Example policies (real)</b><code>C:\Windows\schemas\CodeIntegrity\ExamplePolicies\</code></div>
+  <div><b>Active policy folder (real)</b><code>C:\Windows\System32\CodeIntegrity\CIPolicies\Active\</code></div>
+  <div><b>EFI policy folder, signed (real)</b><code>&lt;ESP&gt;\EFI\Microsoft\Boot\CiPolicies\Active\</code></div>
+  <div><b>OSConfig default base PolicyId (real)</b><code>{9214D8EE-9B0F-4972-9073-A04E917D7989}</code></div>
+  <div><b>OSConfig policy names (real)</b><code>AllowMicrosoft_WS2025_Audit|Enforce</code><br><code>BlockUMCI_Microsoft_WS2025_Audit|Enforce</code></div>
+  <div><b>Inbox driver blocklist (real)</b><code>d2bda982-ccf6-4344-ac5b-0b44427b6816</code></div>
+  <div><b>Custom base (Track B)</b><code>Contoso_SRV_Base.xml</code><br><code>{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}</code></div>
+  <div><b>Supplemental: 7-Zip admin tool</b><code>Contoso_Supp_7Zip.xml</code><br><code>{8E4A2D17-C6B5-4F09-A3D1-2B7E9C40F615}</code></div>
+  <div><b>Deny policy</b><code>Contoso_SRV_Deny.xml</code><br><code>{D2F7C9B1-5A3E-4C8D-B6F0-91E4A7C2D358}</code></div>
+  <div><b>Signing cert (signed lab)</b><code>CN=Contoso App Control Signer</code></div>
+  <div><b>Reserved single-format GUID (real)</b><code>{A244370E-44C9-4C06-B551-F6016E563076}</code></div>
+</div>
+<div class="warn">Use a Hyper-V VM with a checkpoint (Generation 2, Secure Boot on). Don't start on a domain controller or a production server.</div>
+</section>
+
+<!-- ============ 1 ============ -->
+<section id="p1">
+<h2><span class="ph">Study</span>1. What's different on Windows Server 2025</h2>
+<div class="tablewrap"><table>
+<tr><th>Topic</th><th>Windows Server 2025 behavior</th></tr>
+<tr><td><b>CiTool</b></td><td>Included (<code>C:\Windows\System32\CiTool.exe</code>). Use it to add, list and remove policies and to refresh. You don't need RefreshPolicy.exe or WMI.</td></tr>
+<tr><td><b>OSConfig default policies</b></td><td>Microsoft provides an unsigned <b>AllowMicrosoft</b> base and a <b>BlockUMCI</b> (app block list) for WS2025. You apply them with <code>Set-OSConfigDesiredConfiguration</code>. They are <b>not</b> applied by default.</td></tr>
+<tr><td><b>Drift control</b></td><td>Policies set through OSConfig are reapplied about every <b>4 hours</b> if they are removed manually or with CiTool. Remove them through OSConfig.</td></tr>
+<tr><td><b>Build requirement</b></td><td>The OSConfig policies need a <b>production-signed</b> Server 2025 build. Flight-signed (Insider) binaries can make the server unbootable.</td></tr>
+<tr><td><b>Policy removal</b></td><td>Server 2025 shares the Windows 11 24H2 codebase. Unsigned policies are removed with <code>CiTool -rp</code> <b>without a restart</b>.</td></tr>
+<tr><td><b>Signed policy + memory integrity</b></td><td>The “reboot to activate new signed base policies with HVCI” known issue affects Windows 11 updates <b>earlier than 24H2</b>. On a 26100-based server it doesn't apply. Still, a reboot after deploying a signed base to EFI is the safe practice.</td></tr>
+<tr><td><b>Server Core</b></td><td>No Event Viewer or msinfo32 GUI: use <code>Get-WinEvent</code> and <code>Win32_DeviceGuard</code>. The <b>AppLocker – MSI and Script</b> event log is <b>not</b> on Server Core. Run the App Control Wizard on a client.</td></tr>
+<tr><td><b>Management</b></td><td>Standalone or lab: OSConfig / CiTool. Domain: GPO (single policy format only) or script via GPO startup / ConfigMgr. Hybrid: Azure Arc + Azure Monitor workbook for the events.</td></tr>
+</table></div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="p2">
+<h2><span class="ph">Study</span>2. Core concepts</h2>
+<p>App Control for Business (formerly WDAC) is enforced by Code Integrity (CI) in the kernel. It controls kernel drivers (signing scenario <code>131</code>) and, with option <code>0 Enabled:UMCI</code>, user-mode code (signing scenario <code>12</code>): EXE, DLL, MSI, scripts and packaged apps.</p>
+<h3>Rule precedence</h3>
+<div class="flow">
+  <span>1. Explicit <b>Deny</b> in any policy</span><i>→ blocked</i>
+  <span>2. Explicit <b>Allow</b></span><i>→</i>
+  <span>3. Managed Installer / ISG (if enabled)</span><i>→</i>
+  <span>4. No match = <b>implicit deny</b></span>
+</div>
+<p>With several base policies active (for example, the OSConfig AllowMicrosoft base plus your deny policy), a file must be allowed by <b>every</b> base policy, together with that base's supplementals.</p>
+<h3>Policy types</h3>
+<ul>
+  <li><b>Base</b>: stands alone. Option <code>17</code> lets it accept supplementals.</li>
+  <li><b>Supplemental</b>: adds allow rules to one base through <code>BasePolicyID</code>. Deny rules in a supplemental are ignored.</li>
+  <li><b>Deny (blocklist)</b>: a base with explicit deny rules plus “Allow All” rules.</li>
+</ul>
+<h3>Server 2025 file format</h3>
+<p>Multiple policy format only: binary <code>{PolicyId}.cip</code> in <code>C:\Windows\System32\CodeIntegrity\CIPolicies\Active\</code>. Up to 32 active policies is the classic limit. Newer builds raise it, but keep the count small.</p>
+<h3>Microsoft example base policies (in ExamplePolicies)</h3>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>Trusts</th><th>Server use</th></tr>
+<tr><td><code>AllowMicrosoft.xml</code></td><td>Everything Microsoft-signed</td><td>Best starting point for servers: roles, SQL Server, Exchange tools and Defender are all Microsoft-signed</td></tr>
+<tr><td><code>DefaultWindows_Audit.xml</code> / <code>_Enforced.xml</code></td><td>Windows components only</td><td>Very locked-down appliance servers</td></tr>
+<tr><td><code>AllowAll.xml</code></td><td>Everything</td><td>Template for a deny-only policy</td></tr>
+<tr><td><code>AllowAll_EnableHVCI.xml</code></td><td>Everything, turns on HVCI</td><td>Enabling memory integrity via policy</td></tr>
+<tr><td><code>DenyAllAudit.xml</code></td><td>Nothing (audit)</td><td>Inventory what runs on the server</td></tr>
+</table></div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="p3">
+<h2><span class="ph">Study</span>3. Rule levels and policy rule options</h2>
+<h3>Rule levels (<code>-Level</code> / <code>-Fallback</code>)</h3>
+<div class="tablewrap"><table>
+<tr><th>Level</th><th>Matches on</th><th>Notes</th></tr>
+<tr><td><code>Hash</code></td><td>File hash</td><td>Changes with every update. Use for unsigned files only.</td></tr>
+<tr><td><code>FileName</code></td><td>OriginalFileName</td><td>Good for deny rules on Windows binaries</td></tr>
+<tr><td><code>FilePath</code></td><td>Path</td><td>User mode only. Path must be admin-writable only (unless option 18 is set).</td></tr>
+<tr><td><code>SignedVersion</code></td><td>Publisher + minimum version</td><td></td></tr>
+<tr><td><code>Publisher</code></td><td>PCA + leaf CN</td><td>Trusts a vendor</td></tr>
+<tr><td><code>FilePublisher</code></td><td>Publisher + file name + minimum version</td><td><b>Recommended</b></td></tr>
+<tr><td><code>LeafCertificate</code> / <code>PcaCertificate</code> / <code>RootCertificate</code></td><td>Certificate chain</td><td>Increasingly broad</td></tr>
+<tr><td><code>WHQL</code> / <code>WHQLPublisher</code> / <code>WHQLFilePublisher</code></td><td>WHQL drivers</td><td>Kernel drivers</td></tr>
+</table></div>
+<h3>Policy rule options (<code>Set-RuleOption -Option N</code>)</h3>
+<div class="tablewrap"><table>
+<tr><th>#</th><th>Option</th><th>Server guidance</th></tr>
+<tr><td>0</td><td>Enabled:UMCI</td><td>Set it, or only drivers are controlled</td></tr>
+<tr><td>2</td><td>Required:WHQL</td><td>Only after checking every storage, NIC and agent driver</td></tr>
+<tr><td>3</td><td>Enabled:Audit Mode</td><td><b>Start here.</b> Remove it to enforce.</td></tr>
+<tr><td>4</td><td>Disabled:Flight Signing</td><td>Recommended on production servers</td></tr>
+<tr><td>6</td><td>Enabled:Unsigned System Integrity Policy</td><td>Remove only when you move to signed policies</td></tr>
+<tr><td>9</td><td>Enabled:Advanced Boot Options Menu</td><td>Lab only</td></tr>
+<tr><td>10</td><td>Enabled:Boot Audit On Failure</td><td><b>Strongly recommended</b> on servers</td></tr>
+<tr><td>11</td><td>Disabled:Script Enforcement</td><td>Avoid. Server automation should run signed scripts.</td></tr>
+<tr><td>12</td><td>Required:Enforce Store Applications</td><td>Rarely relevant on servers</td></tr>
+<tr><td>13</td><td>Enabled:Managed Installer</td><td>If ConfigMgr installs server software</td></tr>
+<tr><td>14</td><td>Enabled:Intelligent Security Graph Authorization</td><td>Usually <b>not</b> on servers (needs cloud reputation lookups)</td></tr>
+<tr><td>15</td><td>Enabled:Invalidate EAs on Reboot</td><td>Goes with option 14</td></tr>
+<tr><td>16</td><td>Enabled:Update Policy No Reboot</td><td>Set it to avoid maintenance windows</td></tr>
+<tr><td>17</td><td>Enabled:Allow Supplemental Policies</td><td>Set it on the base</td></tr>
+<tr><td>18</td><td>Disabled:Runtime FilePath Rule Protection</td><td>Avoid</td></tr>
+<tr><td>19</td><td>Enabled:Dynamic Code Security</td><td>For .NET dynamic code (event 3114)</td></tr>
+<tr><td>20</td><td>Enabled:Revoked Expired As Unsigned</td><td>Helps with event 3033 (revoked/expired signers)</td></tr>
+</table></div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="p4">
+<h2><span class="ph">Design</span>4. Prepare the server</h2>
+<ol class="steps">
+<li><b>Confirm the OS and build</b> (production-signed 26100.x).
+<pre><code>Get-ComputerInfo -Property OsName, OsVersion, OsBuildNumber, WindowsInstallationType
+<span class="c"># OsName: Microsoft Windows Server 2025 Datacenter   OsBuildNumber: 26100
+# WindowsInstallationType: Server  (Desktop Experience) | Server Core</span>
+Get-Command CiTool.exe</code></pre></li>
+
+<li><b>Record the current App Control and VBS state.</b>
+<pre><code>Get-CimInstance -Namespace root\Microsoft\Windows\DeviceGuard -ClassName Win32_DeviceGuard |
+  Select-Object CodeIntegrityPolicyEnforcementStatus, UsermodeCodeIntegrityPolicyEnforcementStatus,
+                VirtualizationBasedSecurityStatus, SecurityServicesRunning
+<span class="c"># Enforcement status: 0 = Off  1 = Audit  2 = Enforced
+# SecurityServicesRunning contains 2 = memory integrity (HVCI) running</span>
+CiTool -lp</code></pre>
+<p>A fresh server shows only Microsoft platform policies, such as <code>Microsoft Windows Driver Policy</code> (<code>d2bda982-…</code>).</p></li>
+
+<li><b>Install the OSConfig module</b> (for Track A):
+<pre><code>Install-Module -Name Microsoft.OSConfig -Scope AllUsers -Repository PSGallery -Force
+Get-Module -ListAvailable -Name Microsoft.OSConfig</code></pre></li>
+
+<li><b>Create the working folder and check the ConfigCI cmdlets</b> (for Track B):
+<pre><code>New-Item -ItemType Directory -Path C:\WDAC -Force
+Get-Command -Module ConfigCI | Select-Object Name
+Get-ChildItem "$env:windir\schemas\CodeIntegrity\ExamplePolicies"</code></pre></li>
+
+<li><b>Inventory the server workload.</b> Third-party agents (backup, monitoring, AV), drivers and scheduled-task scripts are what will break.
+<pre><code>Get-WindowsFeature | Where-Object Installed | Select-Object Name
+Get-Package | Where-Object ProviderName -eq Programs | Select-Object Name, Version
+Get-CimInstance Win32_SystemDriver | Where-Object State -eq Running |
+  Select-Object Name, PathName | Sort-Object PathName
+Get-ScheduledTask | Where-Object State -ne Disabled |
+  Select-Object TaskPath, TaskName, @{n="Exec";e={$_.Actions.Execute}}</code></pre></li>
+
+<li><b>Back up:</b> create a VM checkpoint and escrow the BitLocker recovery key if BitLocker is on.</li>
+</ol>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="p5">
+<h2><span class="ph">Design</span>5. Choose a track and design the policy set</h2>
+<div class="tracks">
+  <div><h4>Track A: OSConfig default policies</h4>
+  <p>Microsoft-built <b>AllowMicrosoft_WS2025</b> base + <b>BlockUMCI_Microsoft_WS2025</b> block list. You add supplementals for third-party apps. Drift-controlled.</p>
+  <p><b>Best for:</b> fast, supported baseline on standalone or Arc-managed servers.</p></div>
+  <div><h4>Track B: Custom ConfigCI policies + CiTool</h4>
+  <p>Your own base, supplemental and deny policies built with PowerShell, deployed with CiTool or by your tooling. Full control, and can be signed.</p>
+  <p><b>Best for:</b> custom requirements, signed policies, or training on how policies work.</p></div>
+</div>
+<div class="note">You can combine them: Track A for the allowlist plus a Track B <b>deny</b> base for extra blocks. Supplementals for Track A must point at base <code>{9214D8EE-9B0F-4972-9073-A04E917D7989}</code> and be applied through OSConfig.</div>
+
+<h3>Design decisions for SRV-APP01</h3>
+<div class="tablewrap"><table>
+<tr><th>Question</th><th>Contoso decision</th><th>Policy result</th></tr>
+<tr><td>Server role</td><td>IIS web server + 3rd-party backup agent + 7-Zip</td><td>Microsoft-signed roles are covered by AllowMicrosoft</td></tr>
+<tr><td>Baseline</td><td>Track A in the lab; Track B to learn the internals</td><td>OSConfig scenarios / <code>AllowMicrosoft.xml</code></td></tr>
+<tr><td>Third-party apps</td><td>7-Zip in <code>C:\Program Files\7-Zip</code>, backup agent</td><td>Supplemental: FilePublisher + Hash fallback</td></tr>
+<tr><td>Extra blocks</td><td><code>mshta.exe</code> and an unwanted tool <code>MaliciousApp.exe</code></td><td>Deny base built from <code>AllowAll.xml</code></td></tr>
+<tr><td>Rollout</td><td>Audit ≥ 2 weeks including the patch cycle and backup jobs</td><td>Option 3 → removed</td></tr>
+<tr><td>Boot safety</td><td>Never BSOD a server</td><td>Option 10</td></tr>
+<tr><td>Reboots</td><td>Avoid</td><td>Option 16</td></tr>
+<tr><td>Tamper protection</td><td>Phase 2</td><td>Signed base, option 6 removed</td></tr>
+</table></div>
+</section>
+
+<!-- ============ A1 ============ -->
+<section id="a1">
+<h2><span class="ph">Track A</span>A1. Apply the Microsoft default policies (audit)</h2>
+<div class="bad">Production-signed Server 2025 build only. Flight-signed binaries can leave the server unable to start.</div>
+<ol class="steps">
+<li><b>Apply in audit mode</b> (elevated PowerShell):
+<pre><code>Set-OSConfigDesiredConfiguration -Scenario AppControl\WS2025\DefaultPolicy\Audit -Default
+Set-OSConfigDesiredConfiguration -Scenario AppControl\WS2025\AppBlockList\Audit -Default</code></pre></li>
+<li><b>Verify:</b>
+<pre><code>citool -lp | findstr /I "WS2025"
+<span class="c"># Expected:
+# Friendly Name: BlockUMCI_Microsoft_WS2025_Audit
+# Friendly Name: AllowMicrosoft_WS2025_Audit</span></code></pre></li>
+<li><b>Generate activity:</b> run the backup job, open 7-Zip, run admin scripts, apply the monthly CU. Then look for <b>3076</b> events (section 6).</li>
+</ol>
+</section>
+
+<!-- ============ A2 ============ -->
+<section id="a2">
+<h2><span class="ph">Track A</span>A2. Build a supplemental policy from audit events</h2>
+<ol class="steps">
+<li><b>Export the audit events</b> to .evtx. You can use Event Viewer (Filter Current Log → <code>3076</code> → Save Filtered Log File As), or on Server Core:
+<pre><code>wevtutil epl "Microsoft-Windows-CodeIntegrity/Operational" C:\WDAC\SRV-APP01_3076.evtx /q:"*[System[(EventID=3076)]]"</code></pre></li>
+<li>Copy the .evtx file to <code>WKS-ADM01</code> (Windows 10 1909+ with the App Control Wizard, which needs .NET Desktop Runtime 8.0+).</li>
+<li>In the Wizard: <b>Policy Editor</b> → <b>Convert Event Logs to a Policy</b> → <b>Parse Log File(s)</b> → select the .evtx → <b>Next</b>.</li>
+<li>On <b>File Rules</b>, select each file → <b>Rule Type</b> (Microsoft's walkthrough uses <b>Path</b>. Publisher is stronger for signed files) → <b>+ Add Allow</b> → <b>Next</b>. The XML is saved to <code>C:\Users\&lt;user&gt;\Documents</code>.</li>
+<li><b>Copy the XML to the server and apply it through OSConfig:</b>
+<pre><code>$policyPath = "C:\WDAC\Contoso_Supp_7Zip.xml"
+
+<span class="c"># Reset GUID (best practice)</span>
+Set-CIPolicyIdInfo -FilePath $policyPath -ResetPolicyID
+
+<span class="c"># Set policy version (VersionEx in the XML file)</span>
+$policyVersion = "1.0.0.1"
+Set-CIPolicyVersion -FilePath $policyPath -Version $policyVersion
+
+<span class="c"># Set policy info (PolicyName and the PolicyID setting string in the XML file)</span>
+Set-CIPolicyIdInfo -FilePath $policyPath -PolicyID "7Zip-Policy_$policyVersion" -PolicyName "7Zip-Policy"
+
+<span class="c"># Link to the OSConfig WS2025 base policy</span>
+$base = "{9214D8EE-9B0F-4972-9073-A04E917D7989}"
+Set-CIPolicyIdInfo -FilePath $policyPath -SupplementsBasePolicyID $base
+
+<span class="c"># Set the new policy into the system</span>
+Set-OSConfigDesiredConfiguration -Scenario AppControl -Name Policies -Value $policyPath</code></pre></li>
+<li><b>Verify:</b> run the app again and confirm that no <b>new</b> 3076 events appear for it.</li>
+</ol>
+</section>
+
+<!-- ============ A3 ============ -->
+<section id="a3">
+<h2><span class="ph">Track A</span>A3. Enforce, query and remove the OSConfig policies</h2>
+<h3>Switch to enforcement</h3>
+<pre><code><span class="c"># Remove the audit versions first, then apply the enforce versions</span>
+Remove-OSConfigDesiredConfiguration -Scenario AppControl\WS2025\DefaultPolicy\Audit
+Remove-OSConfigDesiredConfiguration -Scenario AppControl\WS2025\AppBlockList\Audit
+
+Set-OSConfigDesiredConfiguration -Scenario AppControl\WS2025\DefaultPolicy\Enforce -Default
+Set-OSConfigDesiredConfiguration -Scenario AppControl\WS2025\AppBlockList\Enforce -Default
+
+citool -lp | findstr /I "WS2025"
+<span class="c"># Friendly Name: BlockUMCI_Microsoft_WS2025_Enforce
+# Friendly Name: AllowMicrosoft_WS2025_Enforce</span></code></pre>
+
+<h3>Query effective and inactive policies</h3>
+<pre><code><span class="c"># Effective</span>
+(Get-OSConfigDesiredConfiguration -Scenario AppControl).Value.PSObject.Properties |
+  ForEach-Object { $_.Value.PolicyInfo } | Where-Object { $_.IsEffective -eq $true }
+
+<span class="c"># Inactive</span>
+(Get-OSConfigDesiredConfiguration -Scenario AppControl).Value.PSObject.Properties |
+  ForEach-Object { $_.Value.PolicyInfo } | Where-Object { $_.IsEffective -eq $false }</code></pre>
+
+<h3>Remove</h3>
+<pre><code>Remove-OSConfigDesiredConfiguration -Scenario AppControl\WS2025\DefaultPolicy\Enforce
+Remove-OSConfigDesiredConfiguration -Scenario AppControl\WS2025\AppBlockList\Enforce
+citool -lp | findstr /I "WS2025"     <span class="c"># no output = removed</span></code></pre>
+<div class="warn"><b>Drift control:</b> If you remove an OSConfig policy with <code>citool -rp</code> or by deleting the file, OSConfig puts it back after about <b>4 hours</b>. Always remove OSConfig policies with <code>Remove-OSConfigDesiredConfiguration</code>.</div>
+</section>
+
+<!-- ============ B1 ============ -->
+<section id="b1">
+<h2><span class="ph">Track B</span>B1. Create a custom base policy (audit)</h2>
+<ol class="steps">
+<li><b>Start from AllowMicrosoft</b> (the recommended server baseline):
+<pre><code>$Base = "C:\WDAC\Contoso_SRV_Base.xml"
+Copy-Item "$env:windir\schemas\CodeIntegrity\ExamplePolicies\AllowMicrosoft.xml" $Base
+Set-CIPolicyIdInfo -FilePath $Base -PolicyName "Contoso SRV Base" -ResetPolicyID
+<span class="c"># -> {3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3} (yours differs)</span>
+Set-CIPolicyVersion -FilePath $Base -Version "1.0.0.0"</code></pre></li>
+<li><b>Set the rule options:</b>
+<pre><code>0,3,4,6,10,16,17 | ForEach-Object { Set-RuleOption -FilePath $Base -Option $_ }
+<span class="c"># 0 UMCI | 3 Audit | 4 No flight signing | 6 Unsigned | 10 Boot audit on failure
+# 16 No reboot updates | 17 Allow supplementals</span>
+Set-RuleOption -FilePath $Base -Option 9      <span class="c"># F8 menu – lab only</span></code></pre></li>
+<li><b>Check it:</b>
+<pre><code>$x = [xml](Get-Content $Base)
+$x.SiPolicy | Select-Object PolicyID, BasePolicyID, VersionEx, PolicyType
+$x.SiPolicy.Rules.Rule.Option</code></pre></li>
+</ol>
+<div class="note"><b>Golden-server scan alternative:</b> <code>New-CIPolicy -FilePath C:\WDAC\SRV_Scan.xml -Level FilePublisher -Fallback SignedVersion,FilePublisher,Hash -ScanPath C:\ -UserPEs -MultiplePolicyFormat</code>. Run it on a clean reference server built from the same image.</div>
+</section>
+
+<!-- ============ B2 ============ -->
+<section id="b2">
+<h2><span class="ph">Track B</span>B2. Supplemental policy for third-party software</h2>
+<pre><code>$Supp = "C:\WDAC\Contoso_Supp_7Zip.xml"
+New-CIPolicy -FilePath $Supp -ScanPath "C:\Program Files\7-Zip" `
+  -Level FilePublisher -Fallback SignedVersion,Hash -UserPEs -MultiplePolicyFormat
+
+Set-CIPolicyIdInfo -FilePath $Supp -PolicyName "Contoso Supp - 7-Zip" `
+  -SupplementsBasePolicyID "{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}"
+Set-CIPolicyIdInfo -FilePath $Supp -ResetPolicyID      <span class="c"># -> {8E4A2D17-...}</span>
+Set-RuleOption     -FilePath $Supp -Option 6
+
+<span class="c"># Repeat for the backup agent, for example:</span>
+New-CIPolicy -FilePath C:\WDAC\Contoso_Supp_Backup.xml -ScanPath "C:\Program Files\Contoso Backup Agent" `
+  -Level FilePublisher -Fallback SignedVersion,Hash -UserPEs -MultiplePolicyFormat</code></pre>
+<div class="warn">Agents often load <b>kernel drivers</b>. Leave out <code>-UserPEs</code> or scan the driver folder (<code>C:\Windows\System32\drivers</code>) separately so the kernel-mode signers are captured too.</div>
+</section>
+
+<!-- ============ B3 ============ -->
+<section id="b3">
+<h2><span class="ph">Track B</span>B3. Deny policy (blocklist)</h2>
+<p class="lead">A deny-only base <b>must</b> include Allow All rules for kernel mode (131) and user mode (12). Without them, everything else is implicitly denied. If you already apply the OSConfig <b>AppBlockList</b>, add only the blocks it doesn't cover.</p>
+<h3>Build the deny rules</h3>
+<pre><code>$DenyRules = @()
+
+<span class="c"># Publisher-based (recommended for signed files)</span>
+$DenyRules += New-CIPolicyRule -Level FilePublisher -DriverFilePath "C:\Windows\System32\mshta.exe" `
+  -Fallback SignedVersion,Publisher,Hash -Deny
+
+<span class="c"># Attribute-based (OriginalFileName)</span>
+$DenyRules += New-CIPolicyRule -Level FileName -DriverFilePath "C:\Tools\MaliciousApp.exe" -Fallback Hash -Deny
+
+<span class="c"># Hash-based – only when necessary</span>
+$DenyRules += New-CIPolicyRule -Level Hash -DriverFilePath "C:\Tools\MaliciousApp.exe" -Deny</code></pre>
+<h3>Merge with AllowAll</h3>
+<pre><code>$DenyPolicy     = "C:\WDAC\Contoso_SRV_Deny.xml"
+$AllowAllPolicy = $Env:windir + "\schemas\CodeIntegrity\ExamplePolicies\AllowAll.xml"
+Merge-CIPolicy -PolicyPaths $AllowAllPolicy -OutputFilePath $DenyPolicy -Rules $DenyRules
+Set-CiPolicyIdInfo -FilePath $DenyPolicy -PolicyName "Contoso SRV Deny" -ResetPolicyID
+Set-RuleOption -FilePath $DenyPolicy -Option 3
+Set-RuleOption -FilePath $DenyPolicy -Option 16</code></pre>
+<h3>Allow All rules (from AllowAll.xml)</h3>
+<pre><code>&lt;FileRules&gt;
+  &lt;Allow ID="ID_ALLOW_A_1" FriendlyName="Allow Kernel Drivers" FileName="*" /&gt;
+  &lt;Allow ID="ID_ALLOW_A_2" FriendlyName="Allow User mode components" FileName="*" /&gt;
+&lt;/FileRules&gt;
+&lt;SigningScenarios&gt;
+  &lt;SigningScenario Value="131" ID="ID_SIGNINGSCENARIO_DRIVERS" FriendlyName="Kernel Mode Signing Scenario"&gt;
+    &lt;ProductSigners&gt;&lt;FileRulesRef&gt;&lt;FileRuleRef RuleID="ID_ALLOW_A_1" /&gt;&lt;/FileRulesRef&gt;&lt;/ProductSigners&gt;
+  &lt;/SigningScenario&gt;
+  &lt;SigningScenario Value="12" ID="ID_SIGNINGSCENARIO_WINDOWS" FriendlyName="User Mode Signing Scenario"&gt;
+    &lt;ProductSigners&gt;&lt;FileRulesRef&gt;&lt;FileRuleRef RuleID="ID_ALLOW_A_2" /&gt;&lt;/FileRulesRef&gt;&lt;/ProductSigners&gt;
+  &lt;/SigningScenario&gt;
+&lt;/SigningScenarios&gt;</code></pre>
+<h3>Or merge into an existing allowlist (no Allow All)</h3>
+<pre><code>$DenyPolicy     = "C:\WDAC\Contoso_SRV_Deny.xml"
+$ExistingPolicy = "C:\WDAC\Contoso_SRV_Base.xml"
+Merge-CIPolicy -PolicyPaths $DenyPolicy, $ExistingPolicy -OutputFilePath $ExistingPolicy</code></pre>
+<h3>Result on SRV-APP01</h3>
+<div class="tablewrap"><table>
+<tr><th>File</th><th>Allowlist base</th><th>Deny base</th><th>Result</th></tr>
+<tr><td><code>MaliciousApp.exe</code></td><td>Implicit deny</td><td>Explicit deny</td><td style="color:var(--bad)">Blocked</td></tr>
+<tr><td><code>mshta.exe</code> (Windows-signed)</td><td>Allowed</td><td>Explicit deny</td><td style="color:var(--bad)">Blocked</td></tr>
+<tr><td><code>w3wp.exe</code> (IIS)</td><td>Allowed</td><td>Allow All</td><td style="color:var(--ok)">Allowed</td></tr>
+<tr><td><code>7z.exe</code></td><td>Allowed via supplemental</td><td>Allow All</td><td style="color:var(--ok)">Allowed</td></tr>
+<tr><td><code>unknown.exe</code></td><td>Implicit deny</td><td>Allow All</td><td style="color:var(--bad)">Blocked</td></tr>
+</table></div>
+<div class="ok">Prefer signer and attribute deny rules. Large hash blocklists are easy to bypass and can slow evaluation.</div>
+</section>
+
+<!-- ============ B4 ============ -->
+<section id="b4">
+<h2><span class="ph">Track B</span>B4. Convert and deploy with CiTool</h2>
+<h3>Convert XML → {PolicyId}.cip</h3>
+<pre><code>foreach ($xml in "Contoso_SRV_Base.xml","Contoso_Supp_7Zip.xml","Contoso_SRV_Deny.xml") {
+  $path = "C:\WDAC\$xml"
+  $id   = ([xml](Get-Content $path)).SiPolicy.PolicyID
+  ConvertFrom-CIPolicy -XmlFilePath $path -BinaryFilePath "C:\WDAC\$id.cip"
+}
+Get-ChildItem C:\WDAC\*.cip</code></pre>
+<h3>Deploy (base first, then supplemental, then deny)</h3>
+<pre><code>CiTool --update-policy "C:\WDAC\{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}.cip" -json
+CiTool --update-policy "C:\WDAC\{8E4A2D17-C6B5-4F09-A3D1-2B7E9C40F615}.cip" -json
+CiTool --update-policy "C:\WDAC\{D2F7C9B1-5A3E-4C8D-B6F0-91E4A7C2D358}.cip" -json
+
+<span class="c"># Only the enforced/active ones</span>
+(CiTool -lp -json | ConvertFrom-Json).Policies | Where-Object {$_.IsEnforced -eq "True"} |
+  Select-Object -Property PolicyID,FriendlyName | Format-List</code></pre>
+<h3>Deploy to many servers (PowerShell remoting)</h3>
+<pre><code>$servers = "SRV-APP01","SRV-APP02","SRV-WEB01"
+foreach ($s in $servers) {
+  Copy-Item C:\WDAC\*.cip -Destination "\\$s\C$\Windows\Temp\" -Force
+}
+Invoke-Command -ComputerName $servers -ScriptBlock {
+  Get-ChildItem C:\Windows\Temp\*.cip | ForEach-Object { CiTool --update-policy $_.FullName -json }
+}</code></pre>
+<h3>Verify activation</h3>
+<pre><code>Get-WinEvent -LogName "Microsoft-Windows-CodeIntegrity/Operational" -MaxEvents 50 |
+  Where-Object Id -in 3099,3101,3102,3095,3097,3100 | Format-Table TimeCreated, Id, Message -Wrap</code></pre>
+<p>Expected: <b>3101</b> → <b>3099</b> (one per policy, with its options) → <b>3102</b>. If you see <b>3095</b>, a reboot is required.</p>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="o1">
+<h2><span class="ph">Operate</span>6. Monitor events</h2>
+<ul>
+  <li><b>CodeIntegrity/Operational</b> (<code>Microsoft-Windows-CodeIntegrity/Operational</code>): EXE, DLL, drivers and policy activation.</li>
+  <li><b>AppLocker/MSI and Script</b> (<code>Microsoft-Windows-AppLocker/MSI and Script</code>): scripts, MSI, COM. <b>Not present on Server Core.</b></li>
+</ul>
+<pre><code><span class="c"># Unique files that would be blocked (audit)</span>
+Get-WinEvent -FilterHashtable @{LogName="Microsoft-Windows-CodeIntegrity/Operational"; Id=3076} |
+  Select-Object TimeCreated, @{n="File";e={$_.Properties[1].Value}}, @{n="Process";e={$_.Properties[3].Value}} |
+  Sort-Object File -Unique | Format-Table -AutoSize
+
+<span class="c"># Enforced blocks</span>
+Get-WinEvent -FilterHashtable @{LogName="Microsoft-Windows-CodeIntegrity/Operational"; Id=3077} -MaxEvents 50
+
+<span class="c"># Scripts / MSI (Desktop Experience only)</span>
+Get-WinEvent -FilterHashtable @{LogName="Microsoft-Windows-AppLocker/MSI and Script"; Id=8028,8029} -MaxEvents 100
+
+<span class="c"># Collect from several servers</span>
+Invoke-Command -ComputerName SRV-APP01,SRV-APP02 -ScriptBlock {
+  Get-WinEvent -FilterHashtable @{LogName="Microsoft-Windows-CodeIntegrity/Operational"; Id=3076,3077} -MaxEvents 200
+} | Select-Object PSComputerName, TimeCreated, Id, Message</code></pre>
+<h3>Turn audit events into a supplemental policy (Track B)</h3>
+<pre><code>New-CIPolicy -Audit -Level FilePublisher -Fallback SignedVersion,Hash -UserPEs -MultiplePolicyFormat `
+  -FilePath C:\WDAC\Contoso_Supp_FromAudit.xml
+Set-CIPolicyIdInfo -FilePath C:\WDAC\Contoso_Supp_FromAudit.xml -PolicyName "Contoso Supp - From Audit" `
+  -SupplementsBasePolicyID "{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}"
+Set-CIPolicyIdInfo -FilePath C:\WDAC\Contoso_Supp_FromAudit.xml -ResetPolicyID</code></pre>
+<div class="warn">Review the generated XML before you deploy it. Don't trust everything that appeared in the logs.</div>
+<h3>ISG / Managed Installer diagnostics (optional)</h3>
+<pre><code>reg add hklm\system\currentcontrolset\control\ci -v TestFlags -t REG_DWORD -d 0x300
+Restart-Computer</code></pre>
+<h3>Centralized monitoring</h3>
+<ul>
+  <li><b>Azure Arc + Log Analytics:</b> collect the CodeIntegrity/Operational log with a Data Collection Rule and use the App Control Azure Monitor workbook (<code>aka.ms/appcontrolworkbook</code>).</li>
+  <li><b>Defender for Servers (MDE) Advanced Hunting:</b></li>
+</ul>
+<pre><code>DeviceEvents
+| where Timestamp &gt; ago(7d)
+| where ActionType in ("AppControlCodeIntegrityPolicyAudited","AppControlCodeIntegrityPolicyBlocked",
+                       "AppControlCIScriptAudited","AppControlCIScriptBlocked")
+| where DeviceName startswith "srv-"
+| summarize Servers=dcount(DeviceId), Hits=count() by FileName, FolderPath, ActionType
+| order by Hits desc</code></pre>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="o2">
+<h2><span class="ph">Operate</span>7. Switch from audit to enforce (Track B)</h2>
+<ol class="steps">
+<li>Make sure there are no unexplained 3076/8028 events after a full cycle (patching, backups, scheduled tasks, reboot).</li>
+<li><b>Remove audit mode and raise the version.</b> Keep the same PolicyId.
+<pre><code>$E = "C:\WDAC\Contoso_SRV_Base.xml"
+Set-RuleOption -FilePath $E -Option 3 -Delete
+Set-RuleOption -FilePath $E -Option 9 -Delete
+Set-CIPolicyVersion -FilePath $E -Version "1.0.1.0"
+ConvertFrom-CIPolicy -XmlFilePath $E -BinaryFilePath "C:\WDAC\{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}.cip"
+CiTool --update-policy "C:\WDAC\{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}.cip" -json</code></pre></li>
+<li><b>Test:</b> <code>mshta.exe</code> should fail with event <b>3077</b>. <code>$ExecutionContext.SessionState.LanguageMode</code> should return <code>ConstrainedLanguage</code> for unsigned interactive sessions under enforced UMCI.</li>
+<li><b>Rings:</b> lab → non-critical servers → one server per role → all servers.</li>
+</ol>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="o3">
+<h2><span class="ph">Operate</span>8. Update and maintain</h2>
+<ul>
+  <li><b>New app:</b> add a supplemental policy. Track A: <code>Set-OSConfigDesiredConfiguration -Scenario AppControl -Name Policies -Value</code>. Track B: <code>CiTool -up</code>.</li>
+  <li><b>Change a policy:</b> keep the PolicyId, raise <code>VersionEx</code>, convert and redeploy. A lower version is rejected.</li>
+  <li><b>Agent upgrades:</b> FilePublisher rules with a minimum version survive upgrades. Hash rules don't.</li>
+  <li><b>Monthly CU:</b> Windows-signed files are already trusted, but test in audit after each CU on a pilot server.</li>
+  <li><b>Source control:</b> keep the XML in Git. The .cip file is a build output.</li>
+  <li><b>Driver blocklist:</b> <code>Microsoft Windows Driver Policy</code> (<code>d2bda982-…</code>) is serviced by Windows Update. Keep it.</li>
+</ul>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="o4">
+<h2><span class="ph">Operate</span>9. Signed policies (Track B, tamper protection)</h2>
+<div class="bad">You can't remove a signed base policy by simply deleting it. That causes a <b>boot failure</b>. Rehearse section 10e in the lab first.</div>
+<ol class="steps">
+<li><b>Add signers and remove option 6:</b>
+<pre><code>$P = "C:\WDAC\Contoso_SRV_Base.xml"
+Add-SignerRule -FilePath $P -CertificatePath C:\WDAC\Certs\ContosoAppControlSigner.cer -Update
+Add-SignerRule -FilePath $P -CertificatePath C:\WDAC\Certs\ContosoAppControlSigner.cer -Supplemental
+Set-RuleOption -FilePath $P -Option 6 -Delete
+Set-CIPolicyVersion -FilePath $P -Version "1.1.0.0"
+ConvertFrom-CIPolicy -XmlFilePath $P -BinaryFilePath "C:\WDAC\{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}.cip"</code></pre></li>
+<li><b>Sign</b> it (signtool comes with the Windows SDK, so run it on the admin workstation):
+<pre><code>signtool.exe sign -v -n "Contoso App Control Signer" -p7 C:\WDAC\Signed -p7co 1.3.6.1.4.1.311.79.1 -fd sha256 `
+  "C:\WDAC\{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}.cip"
+<span class="c"># Rename the output {GUID}.cip.p7 -> {GUID}.cip</span></code></pre></li>
+<li><b>Deploy to the EFI partition and reboot:</b>
+<pre><code>$PolicyBinary         = "C:\WDAC\Signed\{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}.cip"
+$MountPoint           = 'C:\EFIMount'
+$EFIDestinationFolder = "$MountPoint\EFI\Microsoft\Boot\CiPolicies\Active"
+$EFIPartition = (Get-Partition | Where-Object IsSystem).AccessPaths[0]
+if (-Not (Test-Path $MountPoint)) { New-Item -Path $MountPoint -Type Directory -Force }
+mountvol $MountPoint $EFIPartition
+if (-Not (Test-Path $EFIDestinationFolder)) { New-Item -Path $EFIDestinationFolder -Type Directory -Force }
+Copy-Item -Path $PolicyBinary -Destination $EFIDestinationFolder -Force
+mountvol $MountPoint /D
+CiTool --update-policy $PolicyBinary -json
+Restart-Computer</code></pre></li>
+<li><b>Check:</b> <code>CiTool -lp</code> → “Policy is Signed: true”, “Is Currently Enforced: true”.</li>
+</ol>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="o5">
+<h2><span class="ph">Operate</span>10. Remove or disable policies</h2>
+<div class="warn"><b>First</b> stop the method that deploys the policy (OSConfig, GPO, ConfigMgr, remoting script). Otherwise it comes back. For OSConfig policies, see <a href="#a3">A3</a>.</div>
+<h3>10a. Neutralize first (optional)</h3>
+<p>Redeploy the policy (same PolicyId, higher version) with: Allow * rules · option <code>3</code> Audit · option <code>11</code> Disabled:Script Enforcement · all COM objects allowed · option <code>0</code> removed if needed.</p>
+<h3>10b. CiTool (unsigned, no restart needed on Server 2025)</h3>
+<pre><code>CiTool.exe -rp "{D2F7C9B1-5A3E-4C8D-B6F0-91E4A7C2D358}" -json   <span class="c"># deny</span>
+CiTool.exe -rp "{8E4A2D17-C6B5-4F09-A3D1-2B7E9C40F615}" -json   <span class="c"># supplemental</span>
+CiTool.exe -rp "{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}" -json   <span class="c"># base</span>
+CiTool -lp</code></pre>
+<h3>10c. Script (removes the files, then restart)</h3>
+<pre><code><span class="c"># Run as Administrator</span>
+$PolicyId = "{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}"
+
+$SinglePolicyFormatPolicyId = "{A244370E-44C9-4C06-B551-F6016E563076}"
+$SinglePolicyFormatFileName = "\SiPolicy.p7b"
+$MountPoint =  $env:SystemDrive+"\EFIMount"
+$SystemCodeIntegrityFolderRoot = $env:windir+"\System32\CodeIntegrity"
+$EFICodeIntegrityFolderRoot = $MountPoint+"\EFI\Microsoft\Boot"
+$MultiplePolicyFilePath = "\CiPolicies\Active\"+$PolicyId+".cip"
+
+$EFIPartition = (Get-Partition | Where-Object IsSystem).AccessPaths[0]
+if (-Not (Test-Path $MountPoint)) { New-Item -Path $MountPoint -Type Directory -Force }
+mountvol $MountPoint $EFIPartition
+
+if ($PolicyId -eq $SinglePolicyFormatPolicyId) {$NumFilesToDelete = 4} else {$NumFilesToDelete = 2}
+$Count = 1
+while ($Count -le $NumFilesToDelete) {
+    Switch ($Count) {
+        1 {$PolicyPath = $SystemCodeIntegrityFolderRoot+$MultiplePolicyFilePath}
+        2 {$PolicyPath = $EFICodeIntegrityFolderRoot+$MultiplePolicyFilePath}
+        3 {$PolicyPath = $SystemCodeIntegrityFolderRoot+$SinglePolicyFormatFileName}
+        4 {$PolicyPath = $EFICodeIntegrityFolderRoot+$SinglePolicyFormatFileName}
+    }
+    Write-Host "Attempting to remove $PolicyPath..." -ForegroundColor Cyan
+    if (Test-Path $PolicyPath) {Remove-Item -Path $PolicyPath -Force -ErrorAction Continue}
+    $Count = $Count + 1
+}
+mountvol $MountPoint /D
+Restart-Computer</code></pre>
+<h3>10d. Group Policy / MDM</h3>
+<p>GPO: set <i>Computer Configuration → Administrative Templates → System → Device Guard → Deploy App Control for Business</i> to <b>Disabled</b> or <b>Not configured</b>, then delete the policy file and restart. MDM: remove it through the ApplicationControl CSP, then restart.</p>
+<h3>10e. Removing a <u>signed</u> base policy (strict order)</h3>
+<ol class="steps">
+<li>Create a replacement with the <b>same PolicyId</b>, a version that is <b>equal or higher</b>, <code>&lt;UpdatePolicySigners&gt;</code> kept, and option <b>6</b> added:
+<pre><code>$P = "C:\WDAC\Contoso_SRV_Base.xml"
+Set-RuleOption -FilePath $P -Option 6
+Set-CIPolicyVersion -FilePath $P -Version "1.2.0.0"
+ConvertFrom-CIPolicy -XmlFilePath $P -BinaryFilePath "C:\WDAC\{3C9F8E21-7B4D-4A6E-9F12-6D8E5A0B47C3}.cip"</code></pre></li>
+<li>Sign it with a certificate listed in the original <code>&lt;UpdatePolicySigners&gt;</code>.</li>
+<li>Deploy it to System32 and EFI, then <b>restart</b>. This turns off UEFI protection. <b>If you skip this restart, the server fails to boot.</b></li>
+<li>Remove the policy (10b or 10c) and restart.</li>
+</ol>
+<p>Signed <b>supplemental</b> policies are removed like unsigned ones.</p>
+</section>
+
+<!-- ============ 11 ============ -->
+<section id="o6">
+<h2><span class="ph">Operate</span>11. Recover from boot stop failures</h2>
+<p class="lead">To prevent this, set option <code>10 Enabled:Boot Audit On Failure</code>. If the server still won't boot:</p>
+<ol class="steps">
+<li><b>Signed policy:</b> turn off Secure Boot. For a Hyper-V Gen2 VM: <code>Set-VMFirmware -VMName SRV-APP01 -EnableSecureBoot Off</code>. For physical hardware, use the OEM UEFI setup (iLO/iDRAC console).</li>
+<li>Advanced Boot Options → <b>Disable Driver Signature Enforcement</b>. This suspends CI, including App Control, for one boot.</li>
+<li>Sign in and run the removal script (10c).</li>
+<li>If BitLocker is on: <code>Suspend-BitLocker -MountPoint C: -RebootCount 1</code>, then turn Secure Boot back on (<code>Set-VMFirmware -VMName SRV-APP01 -EnableSecureBoot On</code>).</li>
+<li>Restart.</li>
+</ol>
+<div class="note">Have the BitLocker recovery key ready: <code>(Get-BitLockerVolume C:).KeyProtector | Where-Object KeyProtectorType -eq RecoveryPassword</code>. On a domain, it may be escrowed in AD DS.</div>
+</section>
+
+<!-- ============ R1 ============ -->
+<section id="r1">
+<h2><span class="ph">Ref</span>CiTool command reference (Server 2025)</h2>
+<div class="tablewrap"><table>
+<tr><th>Command</th><th>Alias</th><th>Description</th></tr>
+<tr><td><code>--update-policy &lt;path&gt;</code></td><td><code>-up</code></td><td>Add or update a policy</td></tr>
+<tr><td><code>--remove-policy &lt;PolicyGUID&gt;</code></td><td><code>-rp</code></td><td>Remove a policy</td></tr>
+<tr><td><code>--list-policies</code></td><td><code>-lp</code></td><td>List all policies</td></tr>
+<tr><td><code>--add-token &lt;path&gt; [--token-id ID]</code></td><td><code>-at</code></td><td>Deploy a token (the ID must not already exist)</td></tr>
+<tr><td><code>--remove-token &lt;ID&gt;</code></td><td><code>-rt</code></td><td>Remove a token</td></tr>
+<tr><td><code>--list-tokens</code></td><td><code>-lt</code></td><td>List tokens</td></tr>
+<tr><td><code>--device-id</code></td><td><code>-id</code></td><td>Show the CI device ID</td></tr>
+<tr><td><code>--refresh</code></td><td><code>-r</code></td><td>Refresh policies</td></tr>
+<tr><td><code>--help</code></td><td><code>-h</code></td><td>Help</td></tr>
+</table></div>
+<p>Add <code>-json</code> for output you can parse with <code>ConvertFrom-Json</code>.</p>
+<h3>Sample <code>-lp</code> entry</h3>
+<pre><code>Policy ID: d2bda982-ccf6-4344-ac5b-0b44427b6816
+Base Policy ID: d2bda982-ccf6-4344-ac5b-0b44427b6816
+Friendly Name: Microsoft Windows Driver Policy
+Version: 2814751463178240
+Platform Policy: true
+Policy is Signed: true
+Has File on Disk: false
+Is Currently Enforced: true
+Is Authorized: true
+Status: 0</code></pre>
+<div class="tablewrap"><table>
+<tr><th>Field</th><th>Meaning</th></tr>
+<tr><td>Policy ID / Base Policy ID</td><td>The same for a base policy. For a supplemental, the Base Policy ID is the parent.</td></tr>
+<tr><td>Friendly Name</td><td>From <code>&lt;Setting Provider="PolicyInfo" Key="Information" ValueName="Name"&gt;</code></td></tr>
+<tr><td>Version</td><td><code>VersionEx</code> as a 64-bit integer</td></tr>
+<tr><td>Platform Policy</td><td>Provided by Microsoft</td></tr>
+<tr><td>Policy is Signed</td><td>Has a valid signature</td></tr>
+<tr><td>Has File on Disk</td><td>The policy file is present on disk</td></tr>
+<tr><td>Is Currently Enforced</td><td>The policy is active</td></tr>
+<tr><td>Is Authorized</td><td>Token authorization state (equals Is Currently Enforced if no token is needed)</td></tr>
+</table></div>
+</section>
+
+<!-- ============ R2 ============ -->
+<section id="r2">
+<h2><span class="ph">Ref</span>Event ID reference</h2>
+<h3>CodeIntegrity/Operational: block events</h3>
+<div class="tablewrap"><table>
+<tr><th>ID</th><th>Meaning</th></tr>
+<tr><td><b>3076</b></td><td>Audit block: would be blocked if enforced</td></tr>
+<tr><td><b>3077</b></td><td>Enforced block</td></tr>
+<tr><td>3089</td><td>Signature info (one per signature, TotalSignatureCount 0 if unsigned). Correlate by ActivityID.</td></tr>
+<tr><td>3004</td><td>Driver with an invalid signature, or <code>/INTEGRITYCHECK</code> code signed incorrectly</td></tr>
+<tr><td>3033 / 3034</td><td>Revoked or Lifetime-EKU expired signature (enforced / audit). Consider option 20 + hash.</td></tr>
+</table></div>
+<h3>AppLocker/MSI and Script (Desktop Experience only)</h3>
+<div class="tablewrap"><table>
+<tr><th>ID</th><th>Meaning</th></tr>
+<tr><td><b>8028</b> / <b>8029</b></td><td>Script or MSI audit / enforced block (PowerShell uses Constrained Language Mode)</td></tr>
+<tr><td>8036</td><td>COM object blocked</td></tr>
+<tr><td>8037</td><td>Script passed</td></tr>
+<tr><td>8038</td><td>Signature info for 8028/8029</td></tr>
+<tr><td>8039 / 8040</td><td>Packaged app audit / blocked</td></tr>
+</table></div>
+<h3>Policy activation</h3>
+<div class="tablewrap"><table>
+<tr><th>ID</th><th>Meaning</th></tr>
+<tr><td>3095</td><td>Can't refresh. Reboot required.</td></tr>
+<tr><td>3096</td><td>Already up to date</td></tr>
+<tr><td>3097</td><td>Can't be refreshed</td></tr>
+<tr><td><b>3099</b></td><td>Policy loaded (includes options)</td></tr>
+<tr><td>3100</td><td>Refreshed but activation failed. Retry.</td></tr>
+<tr><td>3101 / 3102</td><td>Refresh started / finished for N policies</td></tr>
+<tr><td>3103</td><td>Refresh ignored</td></tr>
+<tr><td>3105</td><td>Attempting to refresh the policy with the specified ID</td></tr>
+</table></div>
+<h3>ISG / Managed Installer</h3>
+<div class="tablewrap"><table>
+<tr><th>ID</th><th>Meaning</th></tr>
+<tr><td>3090</td><td>Allowed only by ISG/MI (needs TestFlags 0x300)</td></tr>
+<tr><td>3091 / 3092</td><td>No ISG/MI authorization: audit / enforced</td></tr>
+<tr><td>8002</td><td>AppLocker EXE and DLL log: managed installer process (PolicyName = MANAGEDINSTALLER)</td></tr>
+</table></div>
+<h3>Other</h3>
+<div class="tablewrap"><table>
+<tr><th>ID</th><th>Meaning</th></tr>
+<tr><td>3001</td><td>Unsigned driver load attempted</td></tr>
+<tr><td>3002 / 3004</td><td>Page hash not found</td></tr>
+<tr><td>3010 / 3011 / 3012</td><td>Catalog invalid / loaded / loading</td></tr>
+<tr><td>3023</td><td>Driver failed the policy</td></tr>
+<tr><td>3024</td><td>Boot catalog refresh failed</td></tr>
+<tr><td>3026 / 3032 / 3036 / 3112</td><td>Revoked certificate or signature</td></tr>
+<tr><td>3064 / 3065</td><td>User-mode DLL audit / block</td></tr>
+<tr><td>3074</td><td>Page hash failure with HVCI</td></tr>
+<tr><td>3075</td><td>Policy check performance</td></tr>
+<tr><td>3079 / 3080 / 3081</td><td>Failed / would fail the policy</td></tr>
+<tr><td>3082</td><td>Non-WHQL driver (audit)</td></tr>
+<tr><td>3084 / 3085</td><td>WHQL enforcement on / off</td></tr>
+<tr><td>3086 / 3104</td><td>Fails IUM / PPL signing requirements</td></tr>
+<tr><td>3108 / 3110</td><td>Mode change succeeded / failed</td></tr>
+<tr><td>3111</td><td>Failed the HVCI policy</td></tr>
+<tr><td>3114</td><td>Dynamic Code Security blocked a .NET app or DLL</td></tr>
+</table></div>
+</section>
+
+<!-- ============ R3 ============ -->
+<section id="r3">
+<h2><span class="ph">Ref</span>Older servers in the same estate</h2>
+<div class="tablewrap"><table>
+<tr><th>OS</th><th>Deploy</th><th>Remove</th></tr>
+<tr><td><b>Server 2025</b></td><td><code>CiTool --update-policy</code> or OSConfig</td><td><code>CiTool -rp</code> (unsigned: no restart) / <code>Remove-OSConfigDesiredConfiguration</code></td></tr>
+<tr><td>Server 2022</td><td>Copy <code>{GUID}.cip</code> to <code>CIPolicies\Active</code> + <code>RefreshPolicy.exe</code> (aka.ms/refreshpolicy)</td><td>Delete the file + restart</td></tr>
+<tr><td>Server 2016 / 2019</td><td>Copy <code>SiPolicy.p7b</code> to <code>System32\CodeIntegrity</code> + <code>Invoke-CimMethod -Namespace root\Microsoft\Windows\CI -ClassName PS_UpdateAndCompareCIPolicy -MethodName Update -Arguments @{FilePath=...}</code></td><td>Delete the file + restart</td></tr>
+</table></div>
+<p>Server 2019 supports a single policy only. Convert with <code>-BinaryFilePath SiPolicy.p7b</code>, and run <code>Set-CIPolicyIdInfo</code> without supplementals.</p>
+</section>
+
+<!-- ============ R4 ============ -->
+<section id="r4">
+<h2><span class="ph">Ref</span>Checklists</h2>
+<h3>Before enforcing on a server</h3>
+<ul class="check">
+  <li>☐ Production-signed Server 2025 build (26100), not flight-signed</li>
+  <li>☐ Base policy has options 0, 4, 10, 16, 17 (and 6 while unsigned), or OSConfig DefaultPolicy is used</li>
+  <li>☐ Audit ran through a full cycle: CU install, reboot, backup, scheduled tasks</li>
+  <li>☐ Supplementals exist for every agent, <b>including their kernel drivers</b></li>
+  <li>☐ Deny policy has the Allow All rules</li>
+  <li>☐ VersionEx raised, binary named <code>{PolicyId}.cip</code></li>
+  <li>☐ Rollback tested: <code>CiTool -rp</code> / <code>Remove-OSConfigDesiredConfiguration</code></li>
+  <li>☐ VM checkpoint / BitLocker key available; console (iLO/iDRAC/Hyper-V) access confirmed</li>
+</ul>
+<h3>Troubleshooting</h3>
+<div class="tablewrap"><table>
+<tr><th>Symptom</th><th>Check</th><th>Fix</th></tr>
+<tr><td>Agent service won't start</td><td>3077 for the EXE, or the driver (3023/3033)</td><td>Supplemental with FilePublisher for user and kernel files</td></tr>
+<tr><td>Scheduled script fails</td><td>8029 / Constrained Language Mode</td><td>Sign the script. Avoid option 11.</td></tr>
+<tr><td>Policy removed but came back</td><td>Was it set by OSConfig?</td><td><code>Remove-OSConfigDesiredConfiguration</code> (drift control, about 4 h)</td></tr>
+<tr><td>Supplemental ignored</td><td>BasePolicyID mismatch / base lacks option 17</td><td>For OSConfig use <code>{9214D8EE-9B0F-4972-9073-A04E917D7989}</code></td></tr>
+<tr><td>Update rejected</td><td>Version lower than the active one</td><td>Raise <code>Set-CIPolicyVersion</code></td></tr>
+<tr><td>Not applied</td><td>3095 / 3097 / 3100</td><td>Check the file name = PolicyId, refresh, or reboot</td></tr>
+<tr><td>Everything blocked</td><td>Deny policy missing Allow All</td><td>Rebuild from <code>AllowAll.xml</code></td></tr>
+<tr><td>No 8028/8029 events</td><td>Server Core</td><td>Expected: that log doesn't exist on Core</td></tr>
+<tr><td>Boot failure after a signed change</td><td>Option 6 replacement skipped</td><td>Section 11</td></tr>
+</table></div>
+</section>
+
+</main>
+</div>
+
+<footer>
+Sources (Microsoft Learn):
+<a href="https://learn.microsoft.com/en-us/windows-server/security/osconfig/osconfig-how-to-configure-app-control-for-business">Configure App Control policies in Windows Server</a> ·
+<a href="https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/design/create-appcontrol-deny-policy">Create deny policy</a> ·
+<a href="https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/operations/citool-commands">CiTool commands</a> ·
+<a href="https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/deployment/deploy-appcontrol-policies-with-script">Deploy with script</a> ·
+<a href="https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/operations/event-id-explanations">Event IDs</a> ·
+<a href="https://learn.microsoft.com/en-us/windows/security/application-security/application-control/app-control-for-business/deployment/disable-appcontrol-policies">Remove policies</a>.
+Contoso PolicyIds are lab examples. Use the values from your own XML.
+</footer>
+
+<script>
+document.querySelectorAll('pre').forEach(function(pre){
+  var b=document.createElement('button');b.className='copy';b.type='button';b.textContent='Copy';
+  b.addEventListener('click',function(){
+    var c=pre.querySelector('code'),t=c?c.innerText:pre.innerText;
+    var done=function(){b.textContent='Copied';setTimeout(function(){b.textContent='Copy'},1200)};
+    if(navigator.clipboard){navigator.clipboard.writeText(t).then(done,function(){})}
+  });
+  pre.appendChild(b);
+});
+(function(){
+  var root=document.documentElement,btn=document.getElementById('themeBtn');
+  try{var s=localStorage.getItem('wdac-theme');if(s)root.setAttribute('data-theme',s);}catch(e){}
+  btn.addEventListener('click',function(){
+    var cur=root.getAttribute('data-theme')||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');
+    var nxt=cur==='dark'?'light':'dark';root.setAttribute('data-theme',nxt);
+    try{localStorage.setItem('wdac-theme',nxt);}catch(e){}
+  });
+})();
+</script>
+</body>
+</html>
